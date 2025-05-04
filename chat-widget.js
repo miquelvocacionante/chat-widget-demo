@@ -323,6 +323,20 @@
 
     let currentSessionId = '';
 
+    function formatText(text) {
+    // Escapem caràcters HTML bàsics per evitar injecció
+    const escapedText = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    // Convertim dobles salts de línia en <p> i simples en <br>
+    return escapedText
+        .split(/\n{2,}/g)
+        .map(par => `<p>${par.replace(/\n/g, '<br>')}</p>`)
+        .join('');
+}
+
     // Create widget container
     const widgetContainer = document.createElement('div');
     widgetContainer.className = 'n8n-chat-widget';

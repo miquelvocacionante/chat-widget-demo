@@ -457,7 +457,7 @@
             responseTimeText: '',
             poweredBy: {
                 text: 'Desenvolupat per ok-otto',
-                link: 'https://n8n.partnerlinks.io/m8a94i19zhqq?utm_source=nocodecreative.io'
+                link: 'https://www.ok-otto.com/?utm_source=chatbotaran'
             }
         },
         style: {
@@ -620,7 +620,7 @@
         </div>
         <div class="new-conversation">
             <div class="language-selection">
-                <div class="language-title">Selecciona l'idioma / Selecciona el idioma</div>
+                <h2 class="language-title">Selecciona idioma</h2>
                 <div class="language-buttons">
                     <button class="language-btn" data-lang="ca">Català</button>
                     <button class="language-btn" data-lang="es">Español</button>

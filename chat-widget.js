@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió Millorada v2
+// Chat Widget Script - Versió Millorada v3
 (function() {
     // Create and inject styles
     const styles = `
@@ -189,22 +189,32 @@
         .n8n-chat-widget .chat-message h1 {
             font-size: 18px;
             font-weight: 600;
-            margin: 8px 0 6px 0;
+            margin: 8px 0 2px 0;
             color: var(--chat--color-font);
         }
 
         .n8n-chat-widget .chat-message h2 {
             font-size: 16px;
             font-weight: 600;
-            margin: 6px 0 4px 0;
+            margin: 6px 0 2px 0;
             color: var(--chat--color-font);
         }
 
         .n8n-chat-widget .chat-message h3 {
             font-size: 15px;
             font-weight: 600;
-            margin: 4px 0 3px 0;
+            margin: 4px 0 2px 0;
             color: var(--chat--color-font);
+        }
+
+        .n8n-chat-widget .chat-message a {
+            color: var(--chat--color-primary);
+            text-decoration: underline;
+            transition: opacity 0.2s;
+        }
+
+        .n8n-chat-widget .chat-message a:hover {
+            opacity: 0.8;
         }
 
         .n8n-chat-widget .chat-message p {
@@ -213,6 +223,58 @@
 
         .n8n-chat-widget .chat-message p:last-child {
             margin-bottom: 0;
+        }
+
+        /* Animació de typing indicator */
+        .n8n-chat-widget .typing-indicator {
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 12px;
+            max-width: 80%;
+            background: var(--chat--color-background);
+            border: 1px solid rgba(133, 79, 255, 0.2);
+            color: var(--chat--color-font);
+            align-self: flex-start;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .n8n-chat-widget .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .n8n-chat-widget .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--chat--color-primary);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .n8n-chat-widget .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .n8n-chat-widget .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .n8n-chat-widget .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
         }
 
         .n8n-chat-widget .chat-input {
@@ -375,6 +437,8 @@
             .replace(/^### (.*$)/gm, '<h3>$1</h3>')
             .replace(/^## (.*$)/gm, '<h2>$1</h2>')
             .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+            // Enllaços: [text](url)
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
             // Negreta: **text** o __text__
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/__(.*?)__/g, '<strong>$1</strong>')
@@ -389,17 +453,49 @@
             .join('');
     }
 
-    // Funció per fer scroll al principi del nou missatge
-    function scrollToNewMessage() {
-        const messages = messagesContainer.querySelectorAll('.chat-message');
-        if (messages.length > 0) {
-            const lastMessage = messages[messages.length - 1];
-            // Fem scroll suau al principi del nou missatge
-            lastMessage.scrollIntoView({ 
+    // Funció per fer scroll mostrant l'últim missatge de l'usuari
+    function scrollToShowUserMessage() {
+        const userMessages = messagesContainer.querySelectorAll('.chat-message.user');
+        if (userMessages.length > 0) {
+            const lastUserMessage = userMessages[userMessages.length - 1];
+            // Fem scroll suau per mostrar l'últim missatge de l'usuari
+            lastUserMessage.scrollIntoView({ 
                 behavior: 'smooth', 
                 block: 'start',
                 inline: 'nearest'
             });
+        }
+    }
+
+    // Funció per mostrar l'indicador de typing
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'typing-indicator';
+        typingDiv.id = 'typing-indicator';
+        typingDiv.innerHTML = `
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        `;
+        messagesContainer.appendChild(typingDiv);
+        
+        // Fem scroll per mostrar l'indicador
+        setTimeout(() => {
+            typingDiv.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'end',
+                inline: 'nearest'
+            });
+        }, 100);
+    }
+
+    // Funció per amagar l'indicador de typing
+    function hideTypingIndicator() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
         }
     }
 
@@ -506,8 +602,14 @@
             botMessageDiv.innerHTML = formatText(Array.isArray(responseData) ? responseData[0].output : responseData.output);
             messagesContainer.appendChild(botMessageDiv);
             
-            // Fem scroll al nou missatge
-            setTimeout(scrollToNewMessage, 100);
+            // Fem scroll per mostrar l'últim missatge de l'usuari (en aquest cas no n'hi ha)
+            setTimeout(() => {
+                botMessageDiv.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            }, 100);
         } catch (error) {
             console.error('Error:', error);
         }
@@ -529,8 +631,8 @@
         userMessageDiv.textContent = message;
         messagesContainer.appendChild(userMessageDiv);
         
-        // Fem scroll al missatge de l'usuari
-        setTimeout(scrollToNewMessage, 100);
+        // Mostrem l'indicador de typing
+        showTypingIndicator();
 
         try {
             const response = await fetch(config.webhook.url, {
@@ -543,15 +645,20 @@
             
             const data = await response.json();
             
+            // Amaguem l'indicador de typing
+            hideTypingIndicator();
+            
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
             // Utilitzem innerHTML amb la funció formatText per mostrar markdown
             botMessageDiv.innerHTML = formatText(Array.isArray(data) ? data[0].output : data.output);
             messagesContainer.appendChild(botMessageDiv);
             
-            // Fem scroll al nou missatge del bot
-            setTimeout(scrollToNewMessage, 100);
+            // Fem scroll per mostrar l'últim missatge de l'usuari
+            setTimeout(scrollToShowUserMessage, 100);
         } catch (error) {
+            // Amaguem l'indicador de typing en cas d'error
+            hideTypingIndicator();
             console.error('Error:', error);
         }
     }

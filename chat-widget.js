@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 1.0
+// Chat Widget Script - Versió 1.1
 (function() {
     // Create and inject styles
     const styles = `
@@ -456,8 +456,8 @@
             welcomeText: '',
             responseTimeText: '',
             poweredBy: {
-                text: 'Amb tecnologia de n8n',
-                link: 'https://n8n.partnerlinks.io/m8a94i19zhqq?utm_source=nocodecreative.io'
+                text: 'Desenvolupat per ok-otto',
+                link: 'https://www.ok-otto.com/?utm_source=chatbotaran'
             }
         },
         style: {
@@ -491,14 +491,16 @@
             placeholder: "Escriu el teu missatge aquí...",
             sendBtn: "Enviar",
             systemMessage: "[IDIOMA:català] L'usuari vol rebre respostes en català",
-            greeting: "Hola! Com et puc ajudar?"
+            greeting: "Hola! Com et puc ajudar?",
+            poweredBy: "Desenvolupat per ok-otto"
         },
         es: {
             btnText: "Envíanos un mensaje",
             placeholder: "Escribe tu mensaje aquí...",
             sendBtn: "Enviar", 
             systemMessage: "[IDIOMA:español] L'usuari vol rebre respostes en español",
-            greeting: "¡Hola! ¿Cómo te puedo ayudar?"
+            greeting: "¡Hola! ¿Cómo te puedo ayudar?",
+            poweredBy: "Desarrollado por ok-otto"
         }
     };
 
@@ -689,6 +691,12 @@
             const texts = languageTexts[lang];
             textarea.placeholder = texts.placeholder;
             sendButton.textContent = texts.sendBtn;
+            
+            // Actualitzar el footer amb l'idioma seleccionat
+            const footerLink = chatContainer.querySelector('.chat-footer a');
+            if (footerLink) {
+                footerLink.textContent = texts.poweredBy;
+            }
             
             // Iniciar xat automàticament després de seleccionar idioma
             await startNewConversation();

@@ -1,4 +1,4 @@
-// Chat Widget Script
+// Chat Widget Script - Versió Millorada
 (function() {
     // Create and inject styles
     const styles = `
@@ -177,6 +177,23 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
+        /* Estils per al formatat de text enriquit */
+        .n8n-chat-widget .chat-message strong {
+            font-weight: 600;
+        }
+
+        .n8n-chat-widget .chat-message em {
+            font-style: italic;
+        }
+
+        .n8n-chat-widget .chat-message p {
+            margin: 0 0 8px 0;
+        }
+
+        .n8n-chat-widget .chat-message p:last-child {
+            margin-bottom: 0;
+        }
+
         .n8n-chat-widget .chat-input {
             padding: 16px;
             background: var(--chat--color-background);
@@ -323,19 +340,43 @@
 
     let currentSessionId = '';
 
+    // Funció millorada per formatar text amb markdown
     function formatText(text) {
-    // Escapem caràcters HTML bàsics per evitar injecció
-    const escapedText = text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+        // Escapem caràcters HTML bàsics per evitar injecció
+        const escapedText = text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
 
-    // Convertim dobles salts de línia en <p> i simples en <br>
-    return escapedText
-        .split(/\n{2,}/g)
-        .map(par => `<p>${par.replace(/\n/g, '<br>')}</p>`)
-        .join('');
-}
+        // Convertim markdown a HTML
+        let formattedText = escapedText
+            // Negreta: **text** o __text__
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/__(.*?)__/g, '<strong>$1</strong>')
+            // Cursiva: *text* o _text_
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/_(.*?)_/g, '<em>$1</em>');
+
+        // Convertim dobles salts de línia en <p> i simples en <br>
+        return formattedText
+            .split(/\n{2,}/g)
+            .map(par => `<p>${par.replace(/\n/g, '<br>')}</p>`)
+            .join('');
+    }
+
+    // Funció per fer scroll al principi del nou missatge
+    function scrollToNewMessage() {
+        const messages = messagesContainer.querySelectorAll('.chat-message');
+        if (messages.length > 0) {
+            const lastMessage = messages[messages.length - 1];
+            // Fem scroll suau al principi del nou missatge
+            lastMessage.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start',
+                inline: 'nearest'
+            });
+        }
+    }
 
     // Create widget container
     const widgetContainer = document.createElement('div');
@@ -436,9 +477,12 @@
 
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = Array.isArray(responseData) ? responseData[0].output : responseData.output;
+            // Utilitzem innerHTML en lloc de textContent per mostrar el formatat
+            botMessageDiv.innerHTML = formatText(Array.isArray(responseData) ? responseData[0].output : responseData.output);
             messagesContainer.appendChild(botMessageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Fem scroll al nou missatge
+            setTimeout(scrollToNewMessage, 100);
         } catch (error) {
             console.error('Error:', error);
         }
@@ -459,7 +503,9 @@
         userMessageDiv.className = 'chat-message user';
         userMessageDiv.textContent = message;
         messagesContainer.appendChild(userMessageDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        // Fem scroll al missatge de l'usuari
+        setTimeout(scrollToNewMessage, 100);
 
         try {
             const response = await fetch(config.webhook.url, {
@@ -474,9 +520,12 @@
             
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
+            // Utilitzem innerHTML amb la funció formatText per mostrar markdown
             botMessageDiv.innerHTML = formatText(Array.isArray(data) ? data[0].output : data.output);
             messagesContainer.appendChild(botMessageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Fem scroll al nou missatge del bot
+            setTimeout(scrollToNewMessage, 100);
         } catch (error) {
             console.error('Error:', error);
         }

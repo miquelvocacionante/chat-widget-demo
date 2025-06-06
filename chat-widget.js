@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió Millorada v4
+// Chat Widget Script - Versió Millorada v5
 (function() {
     // Create and inject styles
     const styles = `
@@ -255,8 +255,26 @@
             transition: opacity 0.2s;
         }
 
-        .n8n-chat-widget .chat-message a:hover {
-            opacity: 0.8;
+        /* Estils per als botons d'enllaç */
+        .n8n-chat-widget .chat-message .link-button {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 8px 0;
+            background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: transform 0.2s;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .n8n-chat-widget .chat-message .link-button:hover {
+            transform: scale(1.02);
+            color: white;
         }
 
         .n8n-chat-widget .chat-message p {
@@ -438,7 +456,7 @@
             welcomeText: '',
             responseTimeText: '',
             poweredBy: {
-                text: 'Amb tecnologia de n8n',
+                text: 'Desenvolupat per ok-otto',
                 link: 'https://n8n.partnerlinks.io/m8a94i19zhqq?utm_source=nocodecreative.io'
             }
         },
@@ -472,13 +490,15 @@
             btnText: "Envia'ns un missatge",
             placeholder: "Escriu el teu missatge aquí...",
             sendBtn: "Enviar",
-            systemMessage: "[IDIOMA:català] L'usuari vol rebre respostes en català"
+            systemMessage: "[IDIOMA:català] L'usuari vol rebre respostes en català",
+            greeting: "Hola! Com et puc ajudar?"
         },
         es: {
             btnText: "Envíanos un mensaje",
             placeholder: "Escribe tu mensaje aquí...",
             sendBtn: "Enviar", 
-            systemMessage: "[IDIOMA:español] L'usuari vol rebre respostes en español"
+            systemMessage: "[IDIOMA:español] L'usuari vol rebre respostes en español",
+            greeting: "¡Hola! ¿Cómo te puedo ayudar?"
         }
     };
 
@@ -496,7 +516,9 @@
             .replace(/^### (.*$)/gm, '<h3>$1</h3>')
             .replace(/^## (.*$)/gm, '<h2>$1</h2>')
             .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-            // Enllaços: [text](url)
+            // Botons d'enllaç: [BOTÓ:text](url)
+            .replace(/\[BOTÓ:([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="link-button">$1</a>')
+            // Enllaços normals: [text](url)
             .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
             // Negreta: **text** o __text__
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -655,7 +677,7 @@
 
     // Gestió de selecció d'idioma
     languageButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             const lang = btn.getAttribute('data-lang');
             selectedLanguage = lang;
             
@@ -665,12 +687,11 @@
             
             // Actualitzar textos de la interfície
             const texts = languageTexts[lang];
-            newChatBtn.querySelector('.btn-text').textContent = texts.btnText;
             textarea.placeholder = texts.placeholder;
             sendButton.textContent = texts.sendBtn;
             
-            // Mostrar el botó de nova conversa
-            newChatBtn.style.display = 'flex';
+            // Iniciar xat automàticament després de seleccionar idioma
+            await startNewConversation();
         });
     });
 
@@ -686,36 +707,22 @@
         }
 
         currentSessionId = generateUUID();
-        const data = [{
-            action: "loadPreviousSession",
-            sessionId: currentSessionId,
-            route: config.webhook.route,
-            metadata: {
-                userId: ""
-            }
-        }];
+        
+        // Canviar a la interfície de xat immediatament
+        chatContainer.querySelector('.brand-header').style.display = 'none';
+        chatContainer.querySelector('.new-conversation').style.display = 'none';
+        chatInterface.classList.add('active');
 
         try {
-            const response = await fetch(config.webhook.url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            const responseData = await response.json();
-            chatContainer.querySelector('.brand-header').style.display = 'none';
-            chatContainer.querySelector('.new-conversation').style.display = 'none';
-            chatInterface.classList.add('active');
-
             // Enviar missatge d'idioma automàticament (invisible per l'usuari)
             const languageMessage = languageTexts[selectedLanguage].systemMessage;
             await sendLanguageMessage(languageMessage);
 
+            // Mostrar missatge de salutació
+            const greetingMessage = languageTexts[selectedLanguage].greeting;
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.innerHTML = formatText(Array.isArray(responseData) ? responseData[0].output : responseData.output);
+            botMessageDiv.innerHTML = formatText(greetingMessage);
             messagesContainer.appendChild(botMessageDiv);
             
             setTimeout(() => {
@@ -725,6 +732,7 @@
                     inline: 'nearest'
                 });
             }, 100);
+
         } catch (error) {
             console.error('Error:', error);
         }

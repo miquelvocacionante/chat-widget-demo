@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió Millorada v6
+// Chat Widget Script - Versió 1.0
 (function() {
     // Create and inject styles
     const styles = `
@@ -94,10 +94,10 @@
         }
 
         .n8n-chat-widget .language-title {
-            font-size: 16px;
-            font-weight: 500;
+            font-size: 20px;
+            font-weight: 600;
             color: var(--chat--color-font);
-            margin-bottom: 12px;
+            margin: 0 0 16px 0;
         }
 
         .n8n-chat-widget .language-buttons {
@@ -456,8 +456,8 @@
             welcomeText: '',
             responseTimeText: '',
             poweredBy: {
-                text: 'Desenvolupat per ok-otto',
-                link: 'https://www.ok-otto.com/?utm_source=chatbotaran'
+                text: 'Amb tecnologia de n8n',
+                link: 'https://n8n.partnerlinks.io/m8a94i19zhqq?utm_source=nocodecreative.io'
             }
         },
         style: {

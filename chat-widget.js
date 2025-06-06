@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 1.1
+// Chat Widget Script - Versió 1.2
 (function() {
     // Create and inject styles
     const styles = `
@@ -518,8 +518,9 @@
             .replace(/^### (.*$)/gm, '<h3>$1</h3>')
             .replace(/^## (.*$)/gm, '<h2>$1</h2>')
             .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-            // Botons d'enllaç: [BOTÓ:text](url)
+            // Botons d'enllaç (català i espanyol): [BOTÓ:text](url) i [BOTÓN:text](url)
             .replace(/\[BOTÓ:([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="link-button">$1</a>')
+            .replace(/\[BOTÓN:([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="link-button">$1</a>')
             // Enllaços normals: [text](url)
             .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
             // Negreta: **text** o __text__

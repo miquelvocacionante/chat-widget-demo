@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió Millorada v3
+// Chat Widget Script - Versió Millorada v4
 (function() {
     // Create and inject styles
     const styles = `
@@ -87,6 +87,48 @@
             text-align: center;
             width: 100%;
             max-width: 300px;
+        }
+
+        .n8n-chat-widget .language-selection {
+            margin-bottom: 24px;
+        }
+
+        .n8n-chat-widget .language-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--chat--color-font);
+            margin-bottom: 12px;
+        }
+
+        .n8n-chat-widget .language-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .n8n-chat-widget .language-btn {
+            flex: 1;
+            padding: 12px 16px;
+            background: transparent;
+            border: 2px solid var(--chat--color-primary);
+            color: var(--chat--color-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .n8n-chat-widget .language-btn:hover {
+            background: var(--chat--color-primary);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .n8n-chat-widget .language-btn.selected {
+            background: var(--chat--color-primary);
+            color: white;
         }
 
         .n8n-chat-widget .welcome-text {
@@ -422,6 +464,23 @@
     window.N8NChatWidgetInitialized = true;
 
     let currentSessionId = '';
+    let selectedLanguage = '';
+
+    // Textos segons l'idioma
+    const languageTexts = {
+        ca: {
+            btnText: "Envia'ns un missatge",
+            placeholder: "Escriu el teu missatge aquí...",
+            sendBtn: "Enviar",
+            systemMessage: "[IDIOMA:català] L'usuari vol rebre respostes en català"
+        },
+        es: {
+            btnText: "Envíanos un mensaje",
+            placeholder: "Escribe tu mensaje aquí...",
+            sendBtn: "Enviar", 
+            systemMessage: "[IDIOMA:español] L'usuari vol rebre respostes en español"
+        }
+    };
 
     // Funció millorada per formatar text amb markdown
     function formatText(text) {
@@ -446,11 +505,30 @@
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             .replace(/_(.*?)_/g, '<em>$1</em>');
 
-        // Convertim dobles salts de línia en <p> i simples en <br>
-        return formattedText
-            .split(/\n{2,}/g)
-            .map(par => `<p>${par.replace(/\n/g, '<br>')}</p>`)
-            .join('');
+        // Millor gestió de salts de línia i paràgrafs
+        // 1. Normalitzem salts de línia
+        formattedText = formattedText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        
+        // 2. Dividim per dobles salts de línia per crear blocs
+        const blocks = formattedText.split(/\n{2,}/);
+        
+        // 3. Processem cada bloc
+        const processedBlocks = blocks.map(block => {
+            // Si el bloc ja és un header, no l'embolicem en <p>
+            if (block.match(/^<h[1-6]>/)) {
+                return block;
+            }
+            // Si el bloc està buit o només té espais, l'ignorem
+            if (block.trim() === '') {
+                return '';
+            }
+            // Convertim salts de línia simples en <br> dins del bloc
+            const processedBlock = block.replace(/\n/g, '<br>');
+            return `<p>${processedBlock}</p>`;
+        });
+
+        // 4. Filtrem blocs buits i els unim
+        return processedBlocks.filter(block => block.trim() !== '').join('');
     }
 
     // Funció per fer scroll mostrant l'últim missatge de l'usuari
@@ -519,12 +597,19 @@
             <button class="close-button">×</button>
         </div>
         <div class="new-conversation">
+            <div class="language-selection">
+                <div class="language-title">Selecciona l'idioma / Selecciona el idioma</div>
+                <div class="language-buttons">
+                    <button class="language-btn" data-lang="ca">Català</button>
+                    <button class="language-btn" data-lang="es">Español</button>
+                </div>
+            </div>
             <h2 class="welcome-text">${config.branding.welcomeText}</h2>
-            <button class="new-chat-btn">
+            <button class="new-chat-btn" style="display: none;">
                 <svg class="message-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/>
                 </svg>
-                Envia'ns un missatge
+                <span class="btn-text">Envia'ns un missatge</span>
             </button>
             <p class="response-text">${config.branding.responseTimeText}</p>
         </div>
@@ -566,12 +651,40 @@
     const messagesContainer = chatContainer.querySelector('.chat-messages');
     const textarea = chatContainer.querySelector('textarea');
     const sendButton = chatContainer.querySelector('button[type="submit"]');
+    const languageButtons = chatContainer.querySelectorAll('.language-btn');
+
+    // Gestió de selecció d'idioma
+    languageButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.getAttribute('data-lang');
+            selectedLanguage = lang;
+            
+            // Actualitzar estils dels botons
+            languageButtons.forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            
+            // Actualitzar textos de la interfície
+            const texts = languageTexts[lang];
+            newChatBtn.querySelector('.btn-text').textContent = texts.btnText;
+            textarea.placeholder = texts.placeholder;
+            sendButton.textContent = texts.sendBtn;
+            
+            // Mostrar el botó de nova conversa
+            newChatBtn.style.display = 'flex';
+        });
+    });
 
     function generateUUID() {
         return crypto.randomUUID();
     }
 
     async function startNewConversation() {
+        // Verificar que s'hagi seleccionat un idioma
+        if (!selectedLanguage) {
+            alert('Selecciona un idioma primer / Selecciona un idioma primero');
+            return;
+        }
+
         currentSessionId = generateUUID();
         const data = [{
             action: "loadPreviousSession",
@@ -596,13 +709,15 @@
             chatContainer.querySelector('.new-conversation').style.display = 'none';
             chatInterface.classList.add('active');
 
+            // Enviar missatge d'idioma automàticament (invisible per l'usuari)
+            const languageMessage = languageTexts[selectedLanguage].systemMessage;
+            await sendLanguageMessage(languageMessage);
+
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            // Utilitzem innerHTML en lloc de textContent per mostrar el formatat
             botMessageDiv.innerHTML = formatText(Array.isArray(responseData) ? responseData[0].output : responseData.output);
             messagesContainer.appendChild(botMessageDiv);
             
-            // Fem scroll per mostrar l'últim missatge de l'usuari (en aquest cas no n'hi ha)
             setTimeout(() => {
                 botMessageDiv.scrollIntoView({ 
                     behavior: 'smooth', 
@@ -612,6 +727,32 @@
             }, 100);
         } catch (error) {
             console.error('Error:', error);
+        }
+    }
+
+    // Funció per enviar el missatge d'idioma (invisible)
+    async function sendLanguageMessage(languageMessage) {
+        const messageData = {
+            action: "sendMessage",
+            sessionId: currentSessionId,
+            route: config.webhook.route,
+            chatInput: languageMessage,
+            metadata: {
+                userId: ""
+            }
+        };
+
+        try {
+            await fetch(config.webhook.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messageData)
+            });
+            // No mostrem la resposta d'aquest missatge a l'usuari
+        } catch (error) {
+            console.error('Error enviando mensaje de idioma:', error);
         }
     }
 

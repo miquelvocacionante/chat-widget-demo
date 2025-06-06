@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió Millorada
+// Chat Widget Script - Versió Millorada v2
 (function() {
     // Create and inject styles
     const styles = `
@@ -186,6 +186,27 @@
             font-style: italic;
         }
 
+        .n8n-chat-widget .chat-message h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 8px 0 6px 0;
+            color: var(--chat--color-font);
+        }
+
+        .n8n-chat-widget .chat-message h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 6px 0 4px 0;
+            color: var(--chat--color-font);
+        }
+
+        .n8n-chat-widget .chat-message h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 4px 0 3px 0;
+            color: var(--chat--color-font);
+        }
+
         .n8n-chat-widget .chat-message p {
             margin: 0 0 8px 0;
         }
@@ -350,6 +371,10 @@
 
         // Convertim markdown a HTML
         let formattedText = escapedText
+            // Headers: ### text -> <h3>
+            .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+            .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+            .replace(/^# (.*$)/gm, '<h1>$1</h1>')
             // Negreta: **text** o __text__
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/__(.*?)__/g, '<strong>$1</strong>')

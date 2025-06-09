@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 1.2
+// Chat Widget Script - Versió 1.4
 (function() {
     // Create and inject styles
     const styles = `
@@ -813,6 +813,8 @@
     function hideQuickOptions() {
         quickOptionsContainer.style.display = 'none';
     }
+    // Funció per enviar el missatge d'idioma (invisible)
+    async function sendLanguageMessage(languageMessage) {
         const messageData = {
             action: "sendMessage",
             sessionId: currentSessionId,
@@ -838,6 +840,55 @@
     }
 
     async function sendMessage(message) {
+        // Amagar opcions ràpides quan l'usuari escriu
+        hideQuickOptions();
+        
+        const messageData = {
+            action: "sendMessage",
+            sessionId: currentSessionId,
+            route: config.webhook.route,
+            chatInput: message,
+            metadata: {
+                userId: ""
+            }
+        };
+
+        const userMessageDiv = document.createElement('div');
+        userMessageDiv.className = 'chat-message user';
+        userMessageDiv.textContent = message;
+        messagesContainer.appendChild(userMessageDiv);
+        
+        // Mostrem l'indicador de typing
+        showTypingIndicator();
+
+        try {
+            const response = await fetch(config.webhook.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messageData)
+            });
+            
+            const data = await response.json();
+            
+            // Amaguem l'indicador de typing
+            hideTypingIndicator();
+            
+            const botMessageDiv = document.createElement('div');
+            botMessageDiv.className = 'chat-message bot';
+            // Utilitzem innerHTML amb la funció formatText per mostrar markdown
+            botMessageDiv.innerHTML = formatText(Array.isArray(data) ? data[0].output : data.output);
+            messagesContainer.appendChild(botMessageDiv);
+            
+            // Fem scroll per mostrar l'últim missatge de l'usuari
+            setTimeout(scrollToShowUserMessage, 100);
+        } catch (error) {
+            // Amaguem l'indicador de typing en cas d'error
+            hideTypingIndicator();
+            console.error('Error:', error);
+        }
+    }
         const messageData = {
             action: "sendMessage",
             sessionId: currentSessionId,

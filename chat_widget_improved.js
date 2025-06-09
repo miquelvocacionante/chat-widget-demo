@@ -1,10 +1,10 @@
-// Chat Widget Script - Versió 1.5
+// Chat Widget Script - Versió 1.2
 (function() {
     // Create and inject styles
     const styles = `
         .n8n-chat-widget {
-            --chat--color-primary: var(--n8n-chat-primary-color, #008fce);
-            --chat--color-secondary: var(--n8n-chat-secondary-color, #006ba3);
+            --chat--color-primary: var(--n8n-chat-primary-color, #854fff);
+            --chat--color-secondary: var(--n8n-chat-secondary-color, #6b3fd4);
             --chat--color-background: var(--n8n-chat-background-color, #ffffff);
             --chat--color-font: var(--n8n-chat-font-color, #333333);
             font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -20,8 +20,8 @@
             height: 600px;
             background: var(--chat--color-background);
             border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 143, 206, 0.15);
-            border: 1px solid rgba(0, 143, 206, 0.2);
+            box-shadow: 0 8px 32px rgba(133, 79, 255, 0.15);
+            border: 1px solid rgba(133, 79, 255, 0.2);
             overflow: hidden;
             font-family: inherit;
         }
@@ -41,7 +41,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            border-bottom: 1px solid rgba(0, 143, 206, 0.1);
+            border-bottom: 1px solid rgba(133, 79, 255, 0.1);
             position: relative;
         }
 
@@ -207,13 +207,13 @@
             background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
             color: white;
             align-self: flex-end;
-            box-shadow: 0 4px 12px rgba(0, 143, 206, 0.2);
+            box-shadow: 0 4px 12px rgba(133, 79, 255, 0.2);
             border: none;
         }
 
         .n8n-chat-widget .chat-message.bot {
             background: var(--chat--color-background);
-            border: 1px solid rgba(0, 143, 206, 0.2);
+            border: 1px solid rgba(133, 79, 255, 0.2);
             color: var(--chat--color-font);
             align-self: flex-start;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -255,7 +255,33 @@
             transition: opacity 0.2s;
         }
 
-        /* Estils per als botons d'enllaç */
+        /* Estils per als botons de suggeriments */
+        .n8n-chat-widget .suggestion-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 12px 0;
+            padding: 0 16px;
+        }
+
+        .n8n-chat-widget .suggestion-btn {
+            background: transparent;
+            border: 1px solid var(--chat--color-primary);
+            color: var(--chat--color-primary);
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .n8n-chat-widget .suggestion-btn:hover {
+            background: var(--chat--color-primary);
+            color: white;
+            transform: translateY(-1px);
+        }
         .n8n-chat-widget .chat-message .link-button {
             display: inline-block;
             padding: 8px 16px;
@@ -340,7 +366,7 @@
         .n8n-chat-widget .chat-input {
             padding: 16px;
             background: var(--chat--color-background);
-            border-top: 1px solid rgba(0, 143, 206, 0.1);
+            border-top: 1px solid rgba(133, 79, 255, 0.1);
             display: flex;
             gap: 8px;
         }
@@ -348,7 +374,7 @@
         .n8n-chat-widget .chat-input textarea {
             flex: 1;
             padding: 12px;
-            border: 1px solid rgba(0, 143, 206, 0.2);
+            border: 1px solid rgba(133, 79, 255, 0.2);
             border-radius: 8px;
             background: var(--chat--color-background);
             color: var(--chat--color-font);
@@ -389,7 +415,7 @@
             color: white;
             border: none;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 143, 206, 0.3);
+            box-shadow: 0 4px 12px rgba(133, 79, 255, 0.3);
             z-index: 999;
             transition: transform 0.3s;
             display: flex;
@@ -416,35 +442,7 @@
             padding: 8px;
             text-align: center;
             background: var(--chat--color-background);
-            border-top: 1px solid rgba(0, 143, 206, 0.1);
-        }
-
-        /* Botons d'opcions ràpides */
-        .n8n-chat-widget .quick-options {
-            padding: 0 16px 16px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .n8n-chat-widget .quick-option-btn {
-            padding: 12px 16px;
-            background: transparent;
-            border: 1px solid var(--chat--color-primary);
-            color: var(--chat--color-primary);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            font-family: inherit;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .n8n-chat-widget .quick-option-btn:hover {
-            background: var(--chat--color-primary);
-            color: white;
-            transform: scale(1.02);
+            border-top: 1px solid rgba(133, 79, 255, 0.1);
         }
 
         .n8n-chat-widget .chat-footer a {
@@ -521,7 +519,7 @@
             systemMessage: "[IDIOMA:català] L'usuari vol rebre respostes en català",
             greeting: "Hola! Com et puc ajudar?",
             poweredBy: "Desenvolupat per ok-otto",
-            quickOptions: [
+            suggestions: [
                 "Programar/reprogramar cita",
                 "Serveis socials", 
                 "Altra consulta"
@@ -534,7 +532,7 @@
             systemMessage: "[IDIOMA:español] L'usuari vol rebre respostes en español",
             greeting: "¡Hola! ¿Cómo te puedo ayudar?",
             poweredBy: "Desarrollado por ok-otto",
-            quickOptions: [
+            suggestions: [
                 "Programar/reprogramar cita",
                 "Servicios sociales",
                 "Otra consulta"
@@ -645,18 +643,10 @@
     widgetContainer.className = 'n8n-chat-widget';
     
     // Set CSS variables for colors
-    if (config.style.primaryColor) {
-        widgetContainer.style.setProperty('--n8n-chat-primary-color', config.style.primaryColor);
-    }
-    if (config.style.secondaryColor) {
-        widgetContainer.style.setProperty('--n8n-chat-secondary-color', config.style.secondaryColor);
-    }
-    if (config.style.backgroundColor) {
-        widgetContainer.style.setProperty('--n8n-chat-background-color', config.style.backgroundColor);
-    }
-    if (config.style.fontColor) {
-        widgetContainer.style.setProperty('--n8n-chat-font-color', config.style.fontColor);
-    }
+    widgetContainer.style.setProperty('--n8n-chat-primary-color', config.style.primaryColor);
+    widgetContainer.style.setProperty('--n8n-chat-secondary-color', config.style.secondaryColor);
+    widgetContainer.style.setProperty('--n8n-chat-background-color', config.style.backgroundColor);
+    widgetContainer.style.setProperty('--n8n-chat-font-color', config.style.fontColor);
 
     const chatContainer = document.createElement('div');
     chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
@@ -694,7 +684,6 @@
                 <button class="close-button">×</button>
             </div>
             <div class="chat-messages"></div>
-            <div class="quick-options" style="display: none;"></div>
             <div class="chat-input">
                 <textarea placeholder="Escriu el teu missatge aquí..." rows="1"></textarea>
                 <button type="submit">Enviar</button>
@@ -721,7 +710,6 @@
     const newChatBtn = chatContainer.querySelector('.new-chat-btn');
     const chatInterface = chatContainer.querySelector('.chat-interface');
     const messagesContainer = chatContainer.querySelector('.chat-messages');
-    const quickOptionsContainer = chatContainer.querySelector('.quick-options');
     const textarea = chatContainer.querySelector('textarea');
     const sendButton = chatContainer.querySelector('button[type="submit"]');
     const languageButtons = chatContainer.querySelectorAll('.language-btn');
@@ -782,9 +770,6 @@
             botMessageDiv.innerHTML = formatText(greetingMessage);
             messagesContainer.appendChild(botMessageDiv);
             
-            // Mostrar botons d'opcions ràpides
-            showQuickOptions();
-            
             setTimeout(() => {
                 botMessageDiv.scrollIntoView({ 
                     behavior: 'smooth', 
@@ -798,29 +783,6 @@
         }
     }
 
-    // Funció per mostrar opcions ràpides
-    function showQuickOptions() {
-        const options = languageTexts[selectedLanguage].quickOptions;
-        quickOptionsContainer.innerHTML = '';
-        
-        options.forEach(option => {
-            const button = document.createElement('button');
-            button.className = 'quick-option-btn';
-            button.textContent = option;
-            button.addEventListener('click', () => {
-                sendMessage(option);
-                hideQuickOptions();
-            });
-            quickOptionsContainer.appendChild(button);
-        });
-        
-        quickOptionsContainer.style.display = 'flex';
-    }
-
-    // Funció per amagar opcions ràpides
-    function hideQuickOptions() {
-        quickOptionsContainer.style.display = 'none';
-    }
     // Funció per enviar el missatge d'idioma (invisible)
     async function sendLanguageMessage(languageMessage) {
         const messageData = {
@@ -848,55 +810,6 @@
     }
 
     async function sendMessage(message) {
-        // Amagar opcions ràpides quan l'usuari escriu
-        hideQuickOptions();
-        
-        const messageData = {
-            action: "sendMessage",
-            sessionId: currentSessionId,
-            route: config.webhook.route,
-            chatInput: message,
-            metadata: {
-                userId: ""
-            }
-        };
-
-        const userMessageDiv = document.createElement('div');
-        userMessageDiv.className = 'chat-message user';
-        userMessageDiv.textContent = message;
-        messagesContainer.appendChild(userMessageDiv);
-        
-        // Mostrem l'indicador de typing
-        showTypingIndicator();
-
-        try {
-            const response = await fetch(config.webhook.url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(messageData)
-            });
-            
-            const data = await response.json();
-            
-            // Amaguem l'indicador de typing
-            hideTypingIndicator();
-            
-            const botMessageDiv = document.createElement('div');
-            botMessageDiv.className = 'chat-message bot';
-            // Utilitzem innerHTML amb la funció formatText per mostrar markdown
-            botMessageDiv.innerHTML = formatText(Array.isArray(data) ? data[0].output : data.output);
-            messagesContainer.appendChild(botMessageDiv);
-            
-            // Fem scroll per mostrar l'últim missatge de l'usuari
-            setTimeout(scrollToShowUserMessage, 100);
-        } catch (error) {
-            // Amaguem l'indicador de typing en cas d'error
-            hideTypingIndicator();
-            console.error('Error:', error);
-        }
-    }
         const messageData = {
             action: "sendMessage",
             sessionId: currentSessionId,

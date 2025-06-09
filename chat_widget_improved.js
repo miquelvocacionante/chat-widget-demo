@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 1.4
+// Chat Widget Script - Versió 1.5
 (function() {
     // Create and inject styles
     const styles = `
@@ -645,10 +645,18 @@
     widgetContainer.className = 'n8n-chat-widget';
     
     // Set CSS variables for colors
-    widgetContainer.style.setProperty('--n8n-chat-primary-color', config.style.primaryColor);
-    widgetContainer.style.setProperty('--n8n-chat-secondary-color', config.style.secondaryColor);
-    widgetContainer.style.setProperty('--n8n-chat-background-color', config.style.backgroundColor);
-    widgetContainer.style.setProperty('--n8n-chat-font-color', config.style.fontColor);
+    if (config.style.primaryColor) {
+        widgetContainer.style.setProperty('--n8n-chat-primary-color', config.style.primaryColor);
+    }
+    if (config.style.secondaryColor) {
+        widgetContainer.style.setProperty('--n8n-chat-secondary-color', config.style.secondaryColor);
+    }
+    if (config.style.backgroundColor) {
+        widgetContainer.style.setProperty('--n8n-chat-background-color', config.style.backgroundColor);
+    }
+    if (config.style.fontColor) {
+        widgetContainer.style.setProperty('--n8n-chat-font-color', config.style.fontColor);
+    }
 
     const chatContainer = document.createElement('div');
     chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;

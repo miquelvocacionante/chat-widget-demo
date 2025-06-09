@@ -1,10 +1,10 @@
-// Chat Widget Script - Versió Millorada
+// Chat Widget Script - Versió 1.2
 (function() {
     // Create and inject styles
     const styles = `
         .n8n-chat-widget {
-            --chat--color-primary: var(--n8n-chat-primary-color, #854fff);
-            --chat--color-secondary: var(--n8n-chat-secondary-color, #6b3fd4);
+            --chat--color-primary: var(--n8n-chat-primary-color, #008fce);
+            --chat--color-secondary: var(--n8n-chat-secondary-color, #006ba3);
             --chat--color-background: var(--n8n-chat-background-color, #ffffff);
             --chat--color-font: var(--n8n-chat-font-color, #333333);
             font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -20,8 +20,8 @@
             height: 600px;
             background: var(--chat--color-background);
             border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(133, 79, 255, 0.15);
-            border: 1px solid rgba(133, 79, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 143, 206, 0.15);
+            border: 1px solid rgba(0, 143, 206, 0.2);
             overflow: hidden;
             font-family: inherit;
         }
@@ -41,7 +41,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            border-bottom: 1px solid rgba(133, 79, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 143, 206, 0.1);
             position: relative;
         }
 
@@ -87,6 +87,48 @@
             text-align: center;
             width: 100%;
             max-width: 300px;
+        }
+
+        .n8n-chat-widget .language-selection {
+            margin-bottom: 24px;
+        }
+
+        .n8n-chat-widget .language-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--chat--color-font);
+            margin: 0 0 16px 0;
+        }
+
+        .n8n-chat-widget .language-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .n8n-chat-widget .language-btn {
+            flex: 1;
+            padding: 12px 16px;
+            background: transparent;
+            border: 2px solid var(--chat--color-primary);
+            color: var(--chat--color-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .n8n-chat-widget .language-btn:hover {
+            background: var(--chat--color-primary);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .n8n-chat-widget .language-btn.selected {
+            background: var(--chat--color-primary);
+            color: white;
         }
 
         .n8n-chat-widget .welcome-text {
@@ -165,13 +207,13 @@
             background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
             color: white;
             align-self: flex-end;
-            box-shadow: 0 4px 12px rgba(133, 79, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 143, 206, 0.2);
             border: none;
         }
 
         .n8n-chat-widget .chat-message.bot {
             background: var(--chat--color-background);
-            border: 1px solid rgba(133, 79, 255, 0.2);
+            border: 1px solid rgba(0, 143, 206, 0.2);
             color: var(--chat--color-font);
             align-self: flex-start;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -186,6 +228,55 @@
             font-style: italic;
         }
 
+        .n8n-chat-widget .chat-message h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 8px 0 2px 0;
+            color: var(--chat--color-font);
+        }
+
+        .n8n-chat-widget .chat-message h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 6px 0 2px 0;
+            color: var(--chat--color-font);
+        }
+
+        .n8n-chat-widget .chat-message h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 4px 0 2px 0;
+            color: var(--chat--color-font);
+        }
+
+        .n8n-chat-widget .chat-message a {
+            color: var(--chat--color-primary);
+            text-decoration: underline;
+            transition: opacity 0.2s;
+        }
+
+        /* Estils per als botons d'enllaç */
+        .n8n-chat-widget .chat-message .link-button {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 8px 0;
+            background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: transform 0.2s;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .n8n-chat-widget .chat-message .link-button:hover {
+            transform: scale(1.02);
+            color: white;
+        }
+
         .n8n-chat-widget .chat-message p {
             margin: 0 0 8px 0;
         }
@@ -194,10 +285,62 @@
             margin-bottom: 0;
         }
 
+        /* Animació de typing indicator */
+        .n8n-chat-widget .typing-indicator {
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 12px;
+            max-width: 80%;
+            background: var(--chat--color-background);
+            border: 1px solid rgba(133, 79, 255, 0.2);
+            color: var(--chat--color-font);
+            align-self: flex-start;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .n8n-chat-widget .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .n8n-chat-widget .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--chat--color-primary);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .n8n-chat-widget .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .n8n-chat-widget .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .n8n-chat-widget .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
         .n8n-chat-widget .chat-input {
             padding: 16px;
             background: var(--chat--color-background);
-            border-top: 1px solid rgba(133, 79, 255, 0.1);
+            border-top: 1px solid rgba(0, 143, 206, 0.1);
             display: flex;
             gap: 8px;
         }
@@ -205,7 +348,7 @@
         .n8n-chat-widget .chat-input textarea {
             flex: 1;
             padding: 12px;
-            border: 1px solid rgba(133, 79, 255, 0.2);
+            border: 1px solid rgba(0, 143, 206, 0.2);
             border-radius: 8px;
             background: var(--chat--color-background);
             color: var(--chat--color-font);
@@ -246,7 +389,7 @@
             color: white;
             border: none;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(133, 79, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 143, 206, 0.3);
             z-index: 999;
             transition: transform 0.3s;
             display: flex;
@@ -273,7 +416,35 @@
             padding: 8px;
             text-align: center;
             background: var(--chat--color-background);
-            border-top: 1px solid rgba(133, 79, 255, 0.1);
+            border-top: 1px solid rgba(0, 143, 206, 0.1);
+        }
+
+        /* Botons d'opcions ràpides */
+        .n8n-chat-widget .quick-options {
+            padding: 0 16px 16px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .n8n-chat-widget .quick-option-btn {
+            padding: 12px 16px;
+            background: transparent;
+            border: 1px solid var(--chat--color-primary);
+            color: var(--chat--color-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .n8n-chat-widget .quick-option-btn:hover {
+            background: var(--chat--color-primary);
+            color: white;
+            transform: scale(1.02);
         }
 
         .n8n-chat-widget .chat-footer a {
@@ -313,8 +484,8 @@
             welcomeText: '',
             responseTimeText: '',
             poweredBy: {
-                text: 'Amb tecnologia de n8n',
-                link: 'https://n8n.partnerlinks.io/m8a94i19zhqq?utm_source=nocodecreative.io'
+                text: 'Desenvolupat per ok-otto',
+                link: 'https://www.ok-otto.com/?utm_source=chatbotaran'
             }
         },
         style: {
@@ -339,6 +510,37 @@
     window.N8NChatWidgetInitialized = true;
 
     let currentSessionId = '';
+    let selectedLanguage = '';
+
+    // Textos segons l'idioma
+    const languageTexts = {
+        ca: {
+            btnText: "Envia'ns un missatge",
+            placeholder: "Escriu el teu missatge aquí...",
+            sendBtn: "Enviar",
+            systemMessage: "[IDIOMA:català] L'usuari vol rebre respostes en català",
+            greeting: "Hola! Com et puc ajudar?",
+            poweredBy: "Desenvolupat per ok-otto",
+            quickOptions: [
+                "Programar/reprogramar cita",
+                "Serveis socials", 
+                "Altra consulta"
+            ]
+        },
+        es: {
+            btnText: "Envíanos un mensaje",
+            placeholder: "Escribe tu mensaje aquí...",
+            sendBtn: "Enviar", 
+            systemMessage: "[IDIOMA:español] L'usuari vol rebre respostes en español",
+            greeting: "¡Hola! ¿Cómo te puedo ayudar?",
+            poweredBy: "Desarrollado por ok-otto",
+            quickOptions: [
+                "Programar/reprogramar cita",
+                "Servicios sociales",
+                "Otra consulta"
+            ]
+        }
+    };
 
     // Funció millorada per formatar text amb markdown
     function formatText(text) {
@@ -350,6 +552,15 @@
 
         // Convertim markdown a HTML
         let formattedText = escapedText
+            // Headers: ### text -> <h3>
+            .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+            .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+            .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+            // Botons d'enllaç (català i espanyol): [BOTÓ:text](url) i [BOTÓN:text](url)
+            .replace(/\[BOTÓ:([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="link-button">$1</a>')
+            .replace(/\[BOTÓN:([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="link-button">$1</a>')
+            // Enllaços normals: [text](url)
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
             // Negreta: **text** o __text__
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/__(.*?)__/g, '<strong>$1</strong>')
@@ -357,24 +568,75 @@
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             .replace(/_(.*?)_/g, '<em>$1</em>');
 
-        // Convertim dobles salts de línia en <p> i simples en <br>
-        return formattedText
-            .split(/\n{2,}/g)
-            .map(par => `<p>${par.replace(/\n/g, '<br>')}</p>`)
-            .join('');
+        // Millor gestió de salts de línia i paràgrafs
+        // 1. Normalitzem salts de línia
+        formattedText = formattedText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        
+        // 2. Dividim per dobles salts de línia per crear blocs
+        const blocks = formattedText.split(/\n{2,}/);
+        
+        // 3. Processem cada bloc
+        const processedBlocks = blocks.map(block => {
+            // Si el bloc ja és un header, no l'embolicem en <p>
+            if (block.match(/^<h[1-6]>/)) {
+                return block;
+            }
+            // Si el bloc està buit o només té espais, l'ignorem
+            if (block.trim() === '') {
+                return '';
+            }
+            // Convertim salts de línia simples en <br> dins del bloc
+            const processedBlock = block.replace(/\n/g, '<br>');
+            return `<p>${processedBlock}</p>`;
+        });
+
+        // 4. Filtrem blocs buits i els unim
+        return processedBlocks.filter(block => block.trim() !== '').join('');
     }
 
-    // Funció per fer scroll al principi del nou missatge
-    function scrollToNewMessage() {
-        const messages = messagesContainer.querySelectorAll('.chat-message');
-        if (messages.length > 0) {
-            const lastMessage = messages[messages.length - 1];
-            // Fem scroll suau al principi del nou missatge
-            lastMessage.scrollIntoView({ 
+    // Funció per fer scroll mostrant l'últim missatge de l'usuari
+    function scrollToShowUserMessage() {
+        const userMessages = messagesContainer.querySelectorAll('.chat-message.user');
+        if (userMessages.length > 0) {
+            const lastUserMessage = userMessages[userMessages.length - 1];
+            // Fem scroll suau per mostrar l'últim missatge de l'usuari
+            lastUserMessage.scrollIntoView({ 
                 behavior: 'smooth', 
                 block: 'start',
                 inline: 'nearest'
             });
+        }
+    }
+
+    // Funció per mostrar l'indicador de typing
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'typing-indicator';
+        typingDiv.id = 'typing-indicator';
+        typingDiv.innerHTML = `
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        `;
+        messagesContainer.appendChild(typingDiv);
+        
+        // Fem scroll per mostrar l'indicador
+        setTimeout(() => {
+            typingDiv.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'end',
+                inline: 'nearest'
+            });
+        }, 100);
+    }
+
+    // Funció per amagar l'indicador de typing
+    function hideTypingIndicator() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
         }
     }
 
@@ -398,12 +660,19 @@
             <button class="close-button">×</button>
         </div>
         <div class="new-conversation">
+            <div class="language-selection">
+                <h2 class="language-title">Selecciona idioma</h2>
+                <div class="language-buttons">
+                    <button class="language-btn" data-lang="ca">Català</button>
+                    <button class="language-btn" data-lang="es">Español</button>
+                </div>
+            </div>
             <h2 class="welcome-text">${config.branding.welcomeText}</h2>
-            <button class="new-chat-btn">
+            <button class="new-chat-btn" style="display: none;">
                 <svg class="message-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/>
                 </svg>
-                Envia'ns un missatge
+                <span class="btn-text">Envia'ns un missatge</span>
             </button>
             <p class="response-text">${config.branding.responseTimeText}</p>
         </div>
@@ -417,6 +686,7 @@
                 <button class="close-button">×</button>
             </div>
             <div class="chat-messages"></div>
+            <div class="quick-options" style="display: none;"></div>
             <div class="chat-input">
                 <textarea placeholder="Escriu el teu missatge aquí..." rows="1"></textarea>
                 <button type="submit">Enviar</button>
@@ -443,48 +713,127 @@
     const newChatBtn = chatContainer.querySelector('.new-chat-btn');
     const chatInterface = chatContainer.querySelector('.chat-interface');
     const messagesContainer = chatContainer.querySelector('.chat-messages');
+    const quickOptionsContainer = chatContainer.querySelector('.quick-options');
     const textarea = chatContainer.querySelector('textarea');
     const sendButton = chatContainer.querySelector('button[type="submit"]');
+    const languageButtons = chatContainer.querySelectorAll('.language-btn');
+
+    // Gestió de selecció d'idioma
+    languageButtons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const lang = btn.getAttribute('data-lang');
+            selectedLanguage = lang;
+            
+            // Actualitzar estils dels botons
+            languageButtons.forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            
+            // Actualitzar textos de la interfície
+            const texts = languageTexts[lang];
+            textarea.placeholder = texts.placeholder;
+            sendButton.textContent = texts.sendBtn;
+            
+            // Actualitzar el footer amb l'idioma seleccionat
+            const footerLink = chatContainer.querySelector('.chat-footer a');
+            if (footerLink) {
+                footerLink.textContent = texts.poweredBy;
+            }
+            
+            // Iniciar xat automàticament després de seleccionar idioma
+            await startNewConversation();
+        });
+    });
 
     function generateUUID() {
         return crypto.randomUUID();
     }
 
     async function startNewConversation() {
+        // Verificar que s'hagi seleccionat un idioma
+        if (!selectedLanguage) {
+            alert('Selecciona un idioma primer / Selecciona un idioma primero');
+            return;
+        }
+
         currentSessionId = generateUUID();
-        const data = [{
-            action: "loadPreviousSession",
+        
+        // Canviar a la interfície de xat immediatament
+        chatContainer.querySelector('.brand-header').style.display = 'none';
+        chatContainer.querySelector('.new-conversation').style.display = 'none';
+        chatInterface.classList.add('active');
+
+        try {
+            // Enviar missatge d'idioma automàticament (invisible per l'usuari)
+            const languageMessage = languageTexts[selectedLanguage].systemMessage;
+            await sendLanguageMessage(languageMessage);
+
+            // Mostrar missatge de salutació
+            const greetingMessage = languageTexts[selectedLanguage].greeting;
+            const botMessageDiv = document.createElement('div');
+            botMessageDiv.className = 'chat-message bot';
+            botMessageDiv.innerHTML = formatText(greetingMessage);
+            messagesContainer.appendChild(botMessageDiv);
+            
+            // Mostrar botons d'opcions ràpides
+            showQuickOptions();
+            
+            setTimeout(() => {
+                botMessageDiv.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            }, 100);
+
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    // Funció per mostrar opcions ràpides
+    function showQuickOptions() {
+        const options = languageTexts[selectedLanguage].quickOptions;
+        quickOptionsContainer.innerHTML = '';
+        
+        options.forEach(option => {
+            const button = document.createElement('button');
+            button.className = 'quick-option-btn';
+            button.textContent = option;
+            button.addEventListener('click', () => {
+                sendMessage(option);
+                hideQuickOptions();
+            });
+            quickOptionsContainer.appendChild(button);
+        });
+        
+        quickOptionsContainer.style.display = 'flex';
+    }
+
+    // Funció per amagar opcions ràpides
+    function hideQuickOptions() {
+        quickOptionsContainer.style.display = 'none';
+    }
+        const messageData = {
+            action: "sendMessage",
             sessionId: currentSessionId,
             route: config.webhook.route,
+            chatInput: languageMessage,
             metadata: {
                 userId: ""
             }
-        }];
+        };
 
         try {
-            const response = await fetch(config.webhook.url, {
+            await fetch(config.webhook.url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(messageData)
             });
-
-            const responseData = await response.json();
-            chatContainer.querySelector('.brand-header').style.display = 'none';
-            chatContainer.querySelector('.new-conversation').style.display = 'none';
-            chatInterface.classList.add('active');
-
-            const botMessageDiv = document.createElement('div');
-            botMessageDiv.className = 'chat-message bot';
-            // Utilitzem innerHTML en lloc de textContent per mostrar el formatat
-            botMessageDiv.innerHTML = formatText(Array.isArray(responseData) ? responseData[0].output : responseData.output);
-            messagesContainer.appendChild(botMessageDiv);
-            
-            // Fem scroll al nou missatge
-            setTimeout(scrollToNewMessage, 100);
+            // No mostrem la resposta d'aquest missatge a l'usuari
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error enviando mensaje de idioma:', error);
         }
     }
 
@@ -504,8 +853,8 @@
         userMessageDiv.textContent = message;
         messagesContainer.appendChild(userMessageDiv);
         
-        // Fem scroll al missatge de l'usuari
-        setTimeout(scrollToNewMessage, 100);
+        // Mostrem l'indicador de typing
+        showTypingIndicator();
 
         try {
             const response = await fetch(config.webhook.url, {
@@ -518,15 +867,20 @@
             
             const data = await response.json();
             
+            // Amaguem l'indicador de typing
+            hideTypingIndicator();
+            
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
             // Utilitzem innerHTML amb la funció formatText per mostrar markdown
             botMessageDiv.innerHTML = formatText(Array.isArray(data) ? data[0].output : data.output);
             messagesContainer.appendChild(botMessageDiv);
             
-            // Fem scroll al nou missatge del bot
-            setTimeout(scrollToNewMessage, 100);
+            // Fem scroll per mostrar l'últim missatge de l'usuari
+            setTimeout(scrollToShowUserMessage, 100);
         } catch (error) {
+            // Amaguem l'indicador de typing en cas d'error
+            hideTypingIndicator();
             console.error('Error:', error);
         }
     }

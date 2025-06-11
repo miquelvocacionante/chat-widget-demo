@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 1.2
+// Chat Widget Script - Versió 1.4
 (function() {
     // Create and inject styles
     const styles = `
@@ -101,20 +101,20 @@
         }
 
         .n8n-chat-widget .language-buttons {
-            display: flex;
-            gap: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
             justify-content: center;
         }
 
         .n8n-chat-widget .language-btn {
-            flex: 1;
-            padding: 12px 16px;
+            padding: 10px 12px;
             background: transparent;
             border: 2px solid var(--chat--color-primary);
             color: var(--chat--color-primary);
             border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             font-family: inherit;
             transition: all 0.3s;
@@ -255,7 +255,33 @@
             transition: opacity 0.2s;
         }
 
-        /* Estils per als botons d'enllaç */
+        /* Estils per als botons de selecció ràpida */
+        .n8n-chat-widget .quick-buttons {
+            margin: 16px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .n8n-chat-widget .quick-btn {
+            padding: 12px 16px;
+            background: transparent;
+            border: 1px solid var(--chat--color-primary);
+            color: var(--chat--color-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .n8n-chat-widget .quick-btn:hover {
+            background: var(--chat--color-primary);
+            color: white;
+            transform: scale(1.02);
+        }
         .n8n-chat-widget .chat-message .link-button {
             display: inline-block;
             padding: 8px 16px;
@@ -491,16 +517,39 @@
             placeholder: "Escriu el teu missatge aquí...",
             sendBtn: "Enviar",
             systemMessage: "[IDIOMA:català] L'usuari vol rebre respostes en català",
-            greeting: "Hola! Com et puc ajudar?",
-            poweredBy: "Desenvolupat per ok-otto"
+            greeting: "Hola! Sóc l'assistent virtual d'ARAN RESPON. Com puc ajudar-te?",
+            poweredBy: "Desenvolupat per ok-otto",
+            quickButtons: [
+                { text: "Programar/reprogramar cita", message: "Vull programar o reprogramar una cita mèdica" },
+                { text: "Serveis socials", message: "Necessito informació sobre serveis socials" },
+                { text: "Altra consulta", message: "Tinc una altra consulta" }
+            ]
         },
         es: {
             btnText: "Envíanos un mensaje",
             placeholder: "Escribe tu mensaje aquí...",
             sendBtn: "Enviar", 
             systemMessage: "[IDIOMA:español] L'usuari vol rebre respostes en español",
-            greeting: "¡Hola! ¿Cómo te puedo ayudar?",
-            poweredBy: "Desarrollado por ok-otto"
+            greeting: "¡Hola! Soy el asistente virtual de ARAN RESPON. ¿Cómo puedo ayudarte?",
+            poweredBy: "Desarrollado por ok-otto",
+            quickButtons: [
+                { text: "Programar/reprogramar cita", message: "Quiero programar o reprogramar una cita médica" },
+                { text: "Servicios sociales", message: "Necesito información sobre servicios sociales" },
+                { text: "Otra consulta", message: "Tengo otra consulta" }
+            ]
+        },
+        oc: {
+            btnText: "Mandatz-mos un messatge",
+            placeholder: "Escrivètz eth vòstre messatge ací...",
+            sendBtn: "Mandar",
+            systemMessage: "[IDIOMA:aranès] L'usuari vol rebre respostes en aranès",
+            greeting: "Adiu! Sòi er assistent virtuau d'ARAN RESPON. Com pòdi ajudar-te?",
+            poweredBy: "Desvolupat per ok-otto",
+            quickButtons: [
+                { text: "Programar/reprogramar rendètz-vos", message: "Vòli programar o reprogramar un rendètz-vos medic" },
+                { text: "Servicis socials", message: "Necessiti informacion sus es servicis socials" },
+                { text: "Auta consulta", message: "Ai ua auta consulta" }
+            ]
         }
     };
 
@@ -518,9 +567,10 @@
             .replace(/^### (.*$)/gm, '<h3>$1</h3>')
             .replace(/^## (.*$)/gm, '<h2>$1</h2>')
             .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-            // Botons d'enllaç (català i espanyol): [BOTÓ:text](url) i [BOTÓN:text](url)
+            // Botons d'enllaç (català, espanyol i aranès): [BOTÓ:text](url), [BOTÓN:text](url), [BOTON:text](url)
             .replace(/\[BOTÓ:([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="link-button">$1</a>')
             .replace(/\[BOTÓN:([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="link-button">$1</a>')
+            .replace(/\[BOTON:([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="link-button">$1</a>')
             // Enllaços normals: [text](url)
             .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
             // Negreta: **text** o __text__
@@ -627,6 +677,7 @@
                 <div class="language-buttons">
                     <button class="language-btn" data-lang="ca">Català</button>
                     <button class="language-btn" data-lang="es">Español</button>
+                    <button class="language-btn" data-lang="oc">Aranès</button>
                 </div>
             </div>
             <h2 class="welcome-text">${config.branding.welcomeText}</h2>
@@ -727,12 +778,30 @@
             const languageMessage = languageTexts[selectedLanguage].systemMessage;
             await sendLanguageMessage(languageMessage);
 
-            // Mostrar missatge de salutació
+            // Mostrar missatge de salutació amb botons de selecció ràpida
             const greetingMessage = languageTexts[selectedLanguage].greeting;
+            const quickButtons = languageTexts[selectedLanguage].quickButtons;
+            
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.innerHTML = formatText(greetingMessage);
+            
+            let quickButtonsHTML = '<div class="quick-buttons">';
+            quickButtons.forEach(button => {
+                quickButtonsHTML += `<button class="quick-btn" data-message="${button.message}">${button.text}</button>`;
+            });
+            quickButtonsHTML += '</div>';
+            
+            botMessageDiv.innerHTML = `${formatText(greetingMessage)}${quickButtonsHTML}`;
             messagesContainer.appendChild(botMessageDiv);
+            
+            // Afegir event listeners als botons de selecció ràpida
+            const quickBtns = botMessageDiv.querySelectorAll('.quick-btn');
+            quickBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const message = btn.getAttribute('data-message');
+                    sendMessage(message);
+                });
+            });
             
             setTimeout(() => {
                 botMessageDiv.scrollIntoView({ 

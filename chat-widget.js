@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 2.4
+// Chat Widget Script - Versió 2.6
 (function() {
     // Create and inject styles
     const styles = `
@@ -328,7 +328,7 @@
         .n8n-chat-widget .category-buttons {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 16px;
         }
 
@@ -340,13 +340,13 @@
         }
 
         .n8n-chat-widget .category-btn {
-            padding: 18px 20px;
+            padding: 14px 18px;
             background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
             border: 2px solid rgba(133, 79, 255, 0.2);
             color: var(--chat--color-primary);
             border-radius: 12px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             font-family: inherit;
             transition: all 0.3s ease;
@@ -483,9 +483,9 @@
 
         .n8n-chat-widget .chat-input textarea {
             flex: 1;
-            padding: 16px;
-            min-height: 60px;
-            max-height: 120px;
+            padding: 14px;
+            min-height: 44px;
+            max-height: 88px;
             border: 1px solid rgba(133, 79, 255, 0.2);
             border-radius: 8px;
             background: var(--chat--color-background);

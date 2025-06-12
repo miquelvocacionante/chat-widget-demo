@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 2.0
+// Chat Widget Script - Versió 2.2
 (function() {
     // Create and inject styles
     const styles = `
@@ -257,7 +257,7 @@
 
         /* Estils per al sistema de navegació */
         .n8n-chat-widget .navigation-container {
-            padding: 16px;
+            padding: 20px;
             background: var(--chat--color-background);
             border-bottom: 1px solid rgba(133, 79, 255, 0.1);
         }
@@ -265,40 +265,42 @@
         .n8n-chat-widget .navigation-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 10px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
 
         .n8n-chat-widget .nav-btn {
-            padding: 6px 12px;
-            background: transparent;
-            border: 1px solid var(--chat--color-primary);
+            padding: 8px 14px;
+            background: rgba(133, 79, 255, 0.1);
+            border: 1px solid rgba(133, 79, 255, 0.3);
             color: var(--chat--color-primary);
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
             font-family: inherit;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
 
         .n8n-chat-widget .nav-btn:hover {
             background: var(--chat--color-primary);
             color: white;
+            transform: scale(1.05);
         }
 
         .n8n-chat-widget .breadcrumb {
-            font-size: 12px;
+            font-size: 13px;
             color: var(--chat--color-font);
             opacity: 0.7;
             margin-left: auto;
+            font-weight: 500;
         }
 
         .n8n-chat-widget .category-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             margin-bottom: 16px;
         }
 
@@ -306,31 +308,76 @@
         .n8n-chat-widget .option-buttons {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .n8n-chat-widget .category-btn,
+        .n8n-chat-widget .category-btn {
+            padding: 18px 20px;
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            border: 2px solid rgba(133, 79, 255, 0.3);
+            color: var(--chat--color-primary);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .n8n-chat-widget .category-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .n8n-chat-widget .category-btn:hover {
+            background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
+            color: white;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(133, 79, 255, 0.4);
+            border-color: transparent;
+        }
+
+        .n8n-chat-widget .category-btn:hover::before {
+            left: 100%;
+        }
+
+        .n8n-chat-widget .category-btn:active {
+            transform: translateY(-1px) scale(1.01);
+        }
+
         .n8n-chat-widget .subcategory-btn,
         .n8n-chat-widget .option-btn {
-            padding: 12px 16px;
-            background: transparent;
-            border: 1px solid var(--chat--color-primary);
+            padding: 14px 18px;
+            background: rgba(248, 249, 255, 0.8);
+            border: 1px solid rgba(133, 79, 255, 0.2);
             color: var(--chat--color-primary);
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
             font-family: inherit;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             text-align: left;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
         }
 
-        .n8n-chat-widget .category-btn:hover,
         .n8n-chat-widget .subcategory-btn:hover,
         .n8n-chat-widget .option-btn:hover {
             background: var(--chat--color-primary);
             color: white;
-            transform: scale(1.02);
+            transform: translateX(4px);
+            box-shadow: 0 4px 15px rgba(133, 79, 255, 0.3);
+            border-color: var(--chat--color-primary);
         }
         .n8n-chat-widget .chat-message .link-button {
             display: inline-block;
@@ -890,9 +937,6 @@
         navDiv.className = 'navigation-container';
         
         navDiv.innerHTML = `
-            <div class="navigation-header">
-                <button class="nav-btn home-btn">${texts.navigation.home}</button>
-            </div>
             <div class="category-buttons">
                 <button class="category-btn" data-category="citas">${categories.citas.title}</button>
                 <button class="category-btn" data-category="servicios">${categories.servicios.title}</button>
@@ -903,8 +947,7 @@
 
         messagesContainer.appendChild(navDiv);
         
-        // Event listeners
-        navDiv.querySelector('.home-btn').addEventListener('click', resetNavigation);
+        // Event listeners (sense botó home)
         navDiv.querySelectorAll('.category-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const category = e.target.getAttribute('data-category');

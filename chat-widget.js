@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 1.6
+// Chat Widget Script - Versió 1.6.1
 (function() {
     // Create and inject styles
     const styles = `

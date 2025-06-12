@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 1.5
+// Chat Widget Script - Versió 1.6
 (function() {
     // Create and inject styles
     const styles = `
@@ -1076,7 +1076,9 @@
             messagesContainer.appendChild(botMessageDiv);
             
             // Afegir event listeners als botons de categories
-            addCategoryEventListeners(botMessageDiv);
+            setTimeout(() => {
+                addCategoryEventListeners(botMessageDiv);
+            }, 100);
             
             setTimeout(() => {
                 botMessageDiv.scrollIntoView({ 
@@ -1148,7 +1150,9 @@
         // Botons de categories principals
         const categoryBtns = container.querySelectorAll('.category-btn');
         categoryBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 const category = btn.getAttribute('data-category');
                 currentCategory = category;
                 currentView = 'category';
@@ -1166,18 +1170,22 @@
         // Botó de tornar
         const backBtn = container.querySelector('.back-btn');
         if (backBtn) {
-            backBtn.addEventListener('click', () => {
+            backBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 if (currentView === 'subcategory') {
                     // Tornar a subcategoria
                     currentView = 'category';
                     const newButtons = createSubCategoryButtons(currentCategory);
-                    container.querySelector('.back-btn').parentNode.outerHTML = newButtons;
+                    const oldContainer = container.querySelector('.back-btn').parentNode;
+                    oldContainer.outerHTML = newButtons;
                     addSubCategoryEventListeners(container);
                 } else {
                     // Tornar a categories principals
                     currentView = 'main';
                     const newButtons = createCategoryButtons();
-                    container.querySelector('.back-btn').parentNode.outerHTML = newButtons;
+                    const oldContainer = container.querySelector('.back-btn').parentNode;
+                    oldContainer.outerHTML = newButtons;
                     addCategoryEventListeners(container);
                 }
             });
@@ -1186,7 +1194,9 @@
         // Botons de subcategoria
         const subBtns = container.querySelectorAll('.sub-btn');
         subBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 const message = btn.getAttribute('data-message');
                 const hasSub = btn.getAttribute('data-has-sub');
                 const buttonText = btn.getAttribute('data-text');
@@ -1195,7 +1205,8 @@
                     // Mostrar botons finals
                     currentView = 'subcategory';
                     const newButtons = createFinalButtons(currentCategory, buttonText);
-                    container.querySelector('.back-btn').parentNode.outerHTML = newButtons;
+                    const oldContainer = container.querySelector('.back-btn').parentNode;
+                    oldContainer.outerHTML = newButtons;
                     addSubCategoryEventListeners(container);
                 } else if (message) {
                     // Enviar missatge

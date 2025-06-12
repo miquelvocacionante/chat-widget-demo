@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 1.8
+// Chat Widget Script - Versió 2.0
 (function() {
     // Create and inject styles
     const styles = `
@@ -255,15 +255,63 @@
             transition: opacity 0.2s;
         }
 
-        /* Estils per als botons de selecció ràpida */
-        .n8n-chat-widget .quick-buttons {
-            margin: 16px 0;
+        /* Estils per al sistema de navegació */
+        .n8n-chat-widget .navigation-container {
+            padding: 16px;
+            background: var(--chat--color-background);
+            border-bottom: 1px solid rgba(133, 79, 255, 0.1);
+        }
+
+        .n8n-chat-widget .navigation-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .n8n-chat-widget .nav-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid var(--chat--color-primary);
+            color: var(--chat--color-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .n8n-chat-widget .nav-btn:hover {
+            background: var(--chat--color-primary);
+            color: white;
+        }
+
+        .n8n-chat-widget .breadcrumb {
+            font-size: 12px;
+            color: var(--chat--color-font);
+            opacity: 0.7;
+            margin-left: auto;
+        }
+
+        .n8n-chat-widget .category-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .n8n-chat-widget .subcategory-buttons,
+        .n8n-chat-widget .option-buttons {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
 
-        .n8n-chat-widget .quick-btn {
+        .n8n-chat-widget .category-btn,
+        .n8n-chat-widget .subcategory-btn,
+        .n8n-chat-widget .option-btn {
             padding: 12px 16px;
             background: transparent;
             border: 1px solid var(--chat--color-primary);
@@ -274,88 +322,14 @@
             font-weight: 500;
             font-family: inherit;
             transition: all 0.3s;
-            text-align: center;
-        }
-
-        .n8n-chat-widget .quick-btn:hover {
-            background: var(--chat--color-primary);
-            color: white;
-            transform: scale(1.02);
-        }
-
-        /* Estils per categories principals */
-        .n8n-chat-widget .category-buttons {
-            margin: 16px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .n8n-chat-widget .category-btn {
-            padding: 14px 16px;
-            background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            font-family: inherit;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .n8n-chat-widget .category-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(133, 79, 255, 0.3);
-        }
-
-        /* Estils per sub-botons */
-        .n8n-chat-widget .sub-buttons {
-            margin: 16px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .n8n-chat-widget .sub-btn {
-            padding: 10px 14px;
-            background: transparent;
-            border: 1px solid var(--chat--color-primary);
-            color: var(--chat--color-primary);
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            font-family: inherit;
-            transition: all 0.3s;
             text-align: left;
         }
 
-        .n8n-chat-widget .sub-btn:hover {
+        .n8n-chat-widget .category-btn:hover,
+        .n8n-chat-widget .subcategory-btn:hover,
+        .n8n-chat-widget .option-btn:hover {
             background: var(--chat--color-primary);
             color: white;
-            transform: translateX(4px);
-        }
-
-        /* Botó de tornar */
-        .n8n-chat-widget .back-btn {
-            padding: 8px 12px;
-            background: #f5f5f5;
-            border: 1px solid #ddd;
-            color: #666;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
-            font-family: inherit;
-            transition: all 0.3s;
-            margin-bottom: 8px;
-            text-align: center;
-        }
-
-        .n8n-chat-widget .back-btn:hover {
-            background: #e8e8e8;
             transform: scale(1.02);
         }
         .n8n-chat-widget .chat-message .link-button {
@@ -585,174 +559,180 @@
 
     let currentSessionId = '';
     let selectedLanguage = '';
-    let currentView = 'main'; // 'main', 'category', 'subcategory'
-    let currentCategory = null;
 
-    // Textos segons l'idioma
+    // Textos i estructura de navegació segons l'idioma
     const languageTexts = {
         ca: {
             btnText: "Envia'ns un missatge",
             placeholder: "Escriu el teu missatge aquí...",
             sendBtn: "Enviar",
             systemMessage: "[IDIOMA:català] L'usuari vol rebre respostes en català",
-            greeting: "Hola! Sóc l'assistent virtual d'ARAN RESPON. Com puc ajudar-te?",
+            greeting: "**Hola! Sóc l'assistent virtual d'ARAN RESPON.** Com puc ajudar-te?",
             poweredBy: "Desenvolupat per ok-otto",
-            backBtn: "← Tornar",
+            navigation: {
+                back: "← Tornar",
+                home: "🏠 Inici",
+                breadcrumb: "Estàs a:"
+            },
             categories: {
-                medical: {
+                "citas": {
                     title: "Cites mèdiques",
-                    buttons: [
-                        {
-                            text: "Demanar cita",
-                            subButtons: [
-                                { text: "Medicina general", message: "Vull demanar una cita de medicina general" },
-                                { text: "Pediatria", message: "Vull demanar una cita de pediatria" },
-                                { text: "Especialistes", message: "Vull demanar una cita amb un especialista" }
-                            ]
+                    subcategories: {
+                        "pedir": {
+                            title: "Demanar cita",
+                            options: {
+                                "medicina-general": { title: "Medicina general", message: "Vull demanar una cita de medicina general" },
+                                "pediatria": { title: "Pediatria", message: "Vull demanar una cita de pediatria" },
+                                "especialistas": { title: "Especialistes", message: "Vull demanar una cita amb un especialista" }
+                            }
                         },
-                        {
-                            text: "Reprogramar cita",
-                            subButtons: [
-                                { text: "Canviar data", message: "Vull canviar la data d'una cita" },
-                                { text: "Canviar especialitat", message: "Vull canviar l'especialitat d'una cita" },
-                                { text: "Cancel·lar cita", message: "Vull cancel·lar una cita" }
-                            ]
+                        "reprogramar": {
+                            title: "Reprogramar cita",
+                            options: {
+                                "cambiar-fecha": { title: "Canviar data", message: "Vull canviar la data d'una cita existent" },
+                                "cambiar-especialidad": { title: "Canviar especialitat", message: "Vull canviar l'especialitat de la meva cita" },
+                                "cancelar": { title: "Cancel·lar cita", message: "Vull cancel·lar una cita mèdica" }
+                            }
                         },
-                        {
-                            text: "Consultar cita",
-                            subButtons: [
-                                { text: "Quan és la meva propera cita?", message: "Quan és la meva propera cita?" },
-                                { text: "On serà?", message: "On serà la meva cita?" }
-                            ]
+                        "consultar": {
+                            title: "Consultar cita",
+                            options: {
+                                "cuando": { title: "Quan és la meva propera cita?", message: "Vull saber quan és la meva propera cita mèdica" },
+                                "donde": { title: "On serà?", message: "Vull saber on serà la meva cita mèdica" }
+                            }
                         }
-                    ]
+                    }
                 },
-                social: {
+                "servicios": {
                     title: "Serveis socials",
-                    buttons: [
-                        {
-                            text: "Ajuda a persones grans",
-                            subButtons: [
-                                { text: "Sol·licitud de valoració", message: "Necessito sol·licitar una valoració per persona gran" },
-                                { text: "Cures domiciliàries", message: "Necessito informació sobre cures domiciliàries" }
-                            ]
+                    subcategories: {
+                        "mayores": {
+                            title: "Ajuda a persones grans",
+                            options: {
+                                "valoracion": { title: "Sol·licitud de valoració", message: "Necessito una valoració per a serveis socials per a persona gran" },
+                                "domiciliarios": { title: "Cures domiciliàries", message: "Necessito informació sobre cures domiciliàries" }
+                            }
                         },
-                        {
-                            text: "Salut mental i suport psicològic",
-                            subButtons: [
-                                { text: "Demanar visita", message: "Vull demanar una visita de salut mental" },
-                                { text: "Urgència emocional", message: "Tinc una urgència emocional" }
-                            ]
+                        "salud-mental": {
+                            title: "Salut mental i suport psicològic",
+                            options: {
+                                "visita": { title: "Demanar visita", message: "Vull demanar una visita de salut mental" },
+                                "urgencia": { title: "Urgència emocional", message: "Tinc una urgència emocional i necessito ajuda" }
+                            }
                         },
-                        {
-                            text: "Altres serveis",
-                            subButtons: [
-                                { text: "Informació sobre dependència", message: "Necessito informació sobre dependència" },
-                                { text: "Sol·licitud d'acompanyament", message: "Necessito sol·licitar un servei d'acompanyament" }
-                            ]
+                        "otros": {
+                            title: "Altres serveis",
+                            options: {
+                                "dependencia": { title: "Informació sobre dependència", message: "Necessito informació sobre la Llei de Dependència" },
+                                "acompanamiento": { title: "Sol·licitud d'acompanyament", message: "Necessito serveis d'acompanyament social" }
+                            }
                         }
-                    ]
+                    }
                 },
-                info: {
+                "informacion": {
                     title: "Informació general",
-                    buttons: [
-                        { text: "On som?", message: "On està ubicat l'hospital?" },
-                        { text: "Horaris de l'hospital", message: "Quins són els horaris de l'hospital?" },
-                        { text: "Telèfons i contacte", message: "Quins són els telèfons de contacte?" },
-                        { text: "Documentació necessària", message: "Quina documentació necessito per als tràmits?" }
-                    ]
+                    options: {
+                        "ubicacion": { title: "On som?", message: "Vull saber on es troben els centres d'Aran Salut" },
+                        "horarios": { title: "Horaris de l'hospital", message: "Vull consultar els horaris de l'hospital" },
+                        "contacto": { title: "Telèfons i contacte", message: "Necessito els telèfons i dades de contacte" },
+                        "documentacion": { title: "Documentació necessària per tràmits", message: "Quin documentació necessito per fer tràmits?" }
+                    }
                 },
-                other: {
+                "otras": {
                     title: "Altres consultes",
-                    buttons: [
-                        { text: "Tinc un dubte mèdic", message: "Tinc un dubte mèdic" },
-                        { text: "Emergències", message: "Tinc una emergència" },
-                        { text: "Receptes i farmàcia", message: "Necessito informació sobre receptes i farmàcia" },
-                        { text: "Ajuda amb l'app o el xat", message: "Necessito ajuda amb l'aplicació o el xat" }
-                    ]
+                    options: {
+                        "duda-medica": { title: "Tinc un dubte mèdic", message: "Tinc un dubte mèdic i necessito orientació" },
+                        "emergencias": { title: "Emergències", message: "És una emergència mèdica" },
+                        "recetas": { title: "Receptes i farmàcia", message: "Tinc una consulta sobre receptes o farmàcia" },
+                        "ayuda-app": { title: "Ajuda amb l'app o el xat", message: "Necessito ajuda amb l'aplicació o aquest xat" }
+                    }
                 }
             }
         },
         es: {
             btnText: "Envíanos un mensaje",
             placeholder: "Escribe tu mensaje aquí...",
-            sendBtn: "Enviar",
+            sendBtn: "Enviar", 
             systemMessage: "[IDIOMA:español] L'usuari vol rebre respostes en español",
-            greeting: "¡Hola! Soy el asistente virtual de ARAN RESPON. ¿Cómo puedo ayudarte?",
+            greeting: "**¡Hola! Soy el asistente virtual de ARAN RESPON.** ¿Cómo puedo ayudarte?",
             poweredBy: "Desarrollado por ok-otto",
-            backBtn: "← Volver",
+            navigation: {
+                back: "← Volver",
+                home: "🏠 Inicio",
+                breadcrumb: "Estás en:"
+            },
             categories: {
-                medical: {
+                "citas": {
                     title: "Citas médicas",
-                    buttons: [
-                        {
-                            text: "Pedir cita",
-                            subButtons: [
-                                { text: "Medicina general", message: "Quiero pedir una cita de medicina general" },
-                                { text: "Pediatría", message: "Quiero pedir una cita de pediatría" },
-                                { text: "Especialistas", message: "Quiero pedir una cita con un especialista" }
-                            ]
+                    subcategories: {
+                        "pedir": {
+                            title: "Pedir cita",
+                            options: {
+                                "medicina-general": { title: "Medicina general", message: "Quiero pedir una cita de medicina general" },
+                                "pediatria": { title: "Pediatría", message: "Quiero pedir una cita de pediatría" },
+                                "especialistas": { title: "Especialistas", message: "Quiero pedir una cita con un especialista" }
+                            }
                         },
-                        {
-                            text: "Reprogramar cita",
-                            subButtons: [
-                                { text: "Cambiar fecha", message: "Quiero cambiar la fecha de una cita" },
-                                { text: "Cambiar especialidad", message: "Quiero cambiar la especialidad de una cita" },
-                                { text: "Cancelar cita", message: "Quiero cancelar una cita" }
-                            ]
+                        "reprogramar": {
+                            title: "Reprogramar cita",
+                            options: {
+                                "cambiar-fecha": { title: "Cambiar fecha", message: "Quiero cambiar la fecha de una cita existente" },
+                                "cambiar-especialidad": { title: "Cambiar especialidad", message: "Quiero cambiar la especialidad de mi cita" },
+                                "cancelar": { title: "Cancelar cita", message: "Quiero cancelar una cita médica" }
+                            }
                         },
-                        {
-                            text: "Consultar cita",
-                            subButtons: [
-                                { text: "¿Cuándo es mi próxima cita?", message: "¿Cuándo es mi próxima cita?" },
-                                { text: "¿Dónde será?", message: "¿Dónde será mi cita?" }
-                            ]
+                        "consultar": {
+                            title: "Consultar cita",
+                            options: {
+                                "cuando": { title: "¿Cuándo es mi próxima cita?", message: "Quiero saber cuándo es mi próxima cita médica" },
+                                "donde": { title: "¿Dónde será?", message: "Quiero saber dónde será mi cita médica" }
+                            }
                         }
-                    ]
+                    }
                 },
-                social: {
+                "servicios": {
                     title: "Servicios sociales",
-                    buttons: [
-                        {
-                            text: "Ayuda a personas mayores",
-                            subButtons: [
-                                { text: "Solicitud de valoración", message: "Necesito solicitar una valoración para persona mayor" },
-                                { text: "Cuidados domiciliarios", message: "Necesito información sobre cuidados domiciliarios" }
-                            ]
+                    subcategories: {
+                        "mayores": {
+                            title: "Ayuda a personas mayores",
+                            options: {
+                                "valoracion": { title: "Solicitud de valoración", message: "Necesito una valoración para servicios sociales para persona mayor" },
+                                "domiciliarios": { title: "Cuidados domiciliarios", message: "Necesito información sobre cuidados domiciliarios" }
+                            }
                         },
-                        {
-                            text: "Salud mental y apoyo psicológico",
-                            subButtons: [
-                                { text: "Pedir visita", message: "Quiero pedir una visita de salud mental" },
-                                { text: "Urgencia emocional", message: "Tengo una urgencia emocional" }
-                            ]
+                        "salud-mental": {
+                            title: "Salud mental y apoyo psicológico",
+                            options: {
+                                "visita": { title: "Pedir visita", message: "Quiero pedir una visita de salud mental" },
+                                "urgencia": { title: "Urgencia emocional", message: "Tengo una urgencia emocional y necesito ayuda" }
+                            }
                         },
-                        {
-                            text: "Otros servicios",
-                            subButtons: [
-                                { text: "Información sobre dependencia", message: "Necesito información sobre dependencia" },
-                                { text: "Solicitud de acompañamiento", message: "Necesito solicitar un servicio de acompañamiento" }
-                            ]
+                        "otros": {
+                            title: "Otros servicios",
+                            options: {
+                                "dependencia": { title: "Información sobre dependencia", message: "Necesito información sobre la Ley de Dependencia" },
+                                "acompanamiento": { title: "Solicitud de acompañamiento", message: "Necesito servicios de acompañamiento social" }
+                            }
                         }
-                    ]
+                    }
                 },
-                info: {
+                "informacion": {
                     title: "Información general",
-                    buttons: [
-                        { text: "¿Dónde estamos?", message: "¿Dónde está ubicado el hospital?" },
-                        { text: "Horarios del hospital", message: "¿Cuáles son los horarios del hospital?" },
-                        { text: "Teléfonos y contacto", message: "¿Cuáles son los teléfonos de contacto?" },
-                        { text: "Documentación necesaria", message: "¿Qué documentación necesito para los trámites?" }
-                    ]
+                    options: {
+                        "ubicacion": { title: "¿Dónde estamos?", message: "Quiero saber dónde están los centros de Aran Salut" },
+                        "horarios": { title: "Horarios del hospital", message: "Quiero consultar los horarios del hospital" },
+                        "contacto": { title: "Teléfonos y contacto", message: "Necesito los teléfonos y datos de contacto" },
+                        "documentacion": { title: "Documentación necesaria para trámites", message: "¿Qué documentación necesito para hacer trámites?" }
+                    }
                 },
-                other: {
+                "otras": {
                     title: "Otras consultas",
-                    buttons: [
-                        { text: "Tengo una duda médica", message: "Tengo una duda médica" },
-                        { text: "Emergencias", message: "Tengo una emergencia" },
-                        { text: "Recetas y farmacia", message: "Necesito información sobre recetas y farmacia" },
-                        { text: "Ayuda con la app o el chat", message: "Necesito ayuda con la aplicación o el chat" }
-                    ]
+                    options: {
+                        "duda-medica": { title: "Tengo una duda médica", message: "Tengo una duda médica y necesito orientación" },
+                        "emergencias": { title: "Emergencias", message: "Es una emergencia médica" },
+                        "recetas": { title: "Recetas y farmacia", message: "Tengo una consulta sobre recetas o farmacia" },
+                        "ayuda-app": { title: "Ayuda con la app o el chat", message: "Necesito ayuda con la aplicación o este chat" }
+                    }
                 }
             }
         },
@@ -761,81 +741,85 @@
             placeholder: "Escrivètz eth vòstre messatge ací...",
             sendBtn: "Mandar",
             systemMessage: "[IDIOMA:aranès] L'usuari vol rebre respostes en aranès",
-            greeting: "Adiu! Sòi er assistent virtuau d'ARAN RESPON. Com pòdi ajudar-te?",
+            greeting: "**Adiu! Sòi er assistent virtuau d'ARAN RESPON.** Com pòdi ajudar-te?",
             poweredBy: "Desvolupat per ok-otto",
-            backBtn: "← Tornar",
+            navigation: {
+                back: "← Tornar",
+                home: "🏠 Inici",
+                breadcrumb: "Ès en:"
+            },
             categories: {
-                medical: {
+                "citas": {
                     title: "Rendètz-vos medics",
-                    buttons: [
-                        {
-                            text: "Demandar rendètz-vos",
-                            subButtons: [
-                                { text: "Medicina generau", message: "Vòli demandar un rendètz-vos de medicina generau" },
-                                { text: "Pediatria", message: "Vòli demandar un rendètz-vos de pediatria" },
-                                { text: "Especialistes", message: "Vòli demandar un rendètz-vos damb un especialista" }
-                            ]
+                    subcategories: {
+                        "pedir": {
+                            title: "Demandar rendètz-vos",
+                            options: {
+                                "medicina-general": { title: "Medecina generau", message: "Vòli demandar un rendètz-vos de medecina generau" },
+                                "pediatria": { title: "Pediatria", message: "Vòli demandar un rendètz-vos de pediatria" },
+                                "especialistas": { title: "Especialistes", message: "Vòli demandar un rendètz-vos damb un especialista" }
+                            }
                         },
-                        {
-                            text: "Reprogramar rendètz-vos",
-                            subButtons: [
-                                { text: "Cambiar data", message: "Vòli cambiar era data d'un rendètz-vos" },
-                                { text: "Cambiar especialitat", message: "Vòli cambiar era especialitat d'un rendètz-vos" },
-                                { text: "Anullar rendètz-vos", message: "Vòli anullar un rendètz-vos" }
-                            ]
+                        "reprogramar": {
+                            title: "Reprogramar rendètz-vos",
+                            options: {
+                                "cambiar-fecha": { title: "Cambiar data", message: "Vòli cambiar era data d'un rendètz-vos existent" },
+                                "cambiar-especialidad": { title: "Cambiar especialitat", message: "Vòli cambiar era especialitat deth meu rendètz-vos" },
+                                "cancelar": { title: "Anullar rendètz-vos", message: "Vòli anullar un rendètz-vos medic" }
+                            }
                         },
-                        {
-                            text: "Consultar rendètz-vos",
-                            subButtons: [
-                                { text: "Quan ei eth mèn seguent rendètz-vos?", message: "Quan ei eth mèn seguent rendètz-vos?" },
-                                { text: "A on serà?", message: "A on serà eth mèn rendètz-vos?" }
-                            ]
+                        "consultar": {
+                            title: "Consultar rendètz-vos",
+                            options: {
+                                "cuando": { title: "Quan ei eth meu següent rendètz-vos?", message: "Vòli saber quan ei eth meu següent rendètz-vos medic" },
+                                "donde": { title: "On serà?", message: "Vòli saber on serà eth meu rendètz-vos medic" }
+                            }
                         }
-                    ]
+                    }
                 },
-                social: {
+                "servicios": {
                     title: "Servicis socials",
-                    buttons: [
-                        {
-                            text: "Ajuda a persones ancianes",
-                            subButtons: [
-                                { text: "Sollicitut de valoracion", message: "Necessiti sollicitar ua valoracion entà persòna anciana" },
-                                { text: "Cures domiciliaris", message: "Necessiti informacion sus es cures domiciliaris" }
-                            ]
+                    subcategories: {
+                        "mayores": {
+                            title: "Ajuda a persones majors",
+                            options: {
+                                "valoracion": { title: "Sol·licitud de valoracion", message: "Necessiti ua valoracion entà servicis socials entà persona major" },
+                                "domiciliarios": { title: "Cures domiciliaris", message: "Necessiti informacion sus cures domiciliaris" }
+                            }
                         },
-                        {
-                            text: "Salut mentau e supòrt psicologic",
-                            subButtons: [
-                                { text: "Demandar visita", message: "Vòli demandar ua visita de salut mentau" },
-                                { text: "Urgéncia emocionau", message: "Ai ua urgéncia emocionau" }
-                            ]
+                        "salud-mental": {
+                            title: "Salut mentau e supòrt psicologic",
+                            options: {
+                                "visita": { title: "Demandar visita", message: "Vòli demandar ua visita de salut mentau" },
+                                "urgencia": { title: "Urgéncia emocionau", message: "Ai ua urgéncia emocionau e necessiti ajuda" }
+                            }
                         },
-                        {
-                            text: "Auti servicis",
-                            subButtons: [
-                                { text: "Informacion sus era dependéncia", message: "Necessiti informacion sus era dependéncia" },
-                                { text: "Sollicitut d'acompanhament", message: "Necessiti sollicitar un servici d'acompanhament" }
-                            ]
+                        "otros": {
+                            title: "Auti servicis",
+                            options: {
+                                "dependencia": { title: "Informacion sus dependéncia", message: "Necessiti informacion sus era Lei de Dependéncia" },
+                                "acompanamiento": { title: "Sol·licitud d'acompanhament", message: "Necessiti servicis d'acompanhament sociau" }
+                            }
                         }
-                    ]
+                    }
                 },
-                info: {
+                "informacion": {
                     title: "Informacion generau",
-                    buttons: [
-                        { text: "A on èm?", message: "A on ei localizat er espitau?" },
-                        { text: "Oraris der espitau", message: "Quins son es oraris der espitau?" },
-                        { text: "Telefòns e contacte", message: "Quins son es telefòns de contacte?" },
-                        { text: "Documentacion necessària", message: "Quina documentacion necessiti entàs tramits?" }
-                    ]
+                    options: {
+                        "ubicacion": { title: "On sòm?", message: "Vòli saber on se tròben es centres d'Aran Salut" },
+                        "horarios": { title: "Oraris dera espitau", message: "Vòli consultar es oraris dera espitau" },
+                        "contacto": { title: "Telefòns e contacte", message: "Necessiti es telefòns e dades de contacte" },
+                        "documentacion": { title: "Documentacion necessària entà tramits", message: "Quina documentacion necessiti entà hèr tramits?" }
+                    }
                 },
-                other: {
+                "otras": {
                     title: "Autes consultes",
-                    buttons: [
-                        { text: "Ai un dubte medic", message: "Ai un dubte medic" },
-                        { text: "Emergéncies", message: "Ai ua emergéncia" },
-                        { text: "Recèptes e farmàcia", message: "Necessiti informacion sus recèptes e farmàcia" },
-                        { text: "Ajuda damb era app o eth xat", message: "Necessiti ajuda damb era aplicacion o eth xat" }
-                    ]
+                    options: {
+                        "duda-medica": { title: "Ai un dobte medic", message: "Ai un dobte medic e necessiti orientacion" },
+                        "emergencias": { title: "Emergéncies", message: "Ei ua emergéncia medica" },
+                        "recetas": { title: "Recèptes e farmàcia", message: "Ai ua consulta sus recèptes o farmàcia" },
+                        "ayuda-app": { title: "Ajuda damb era app o eth chat", message: "Necessiti ajuda damb era aplicacion o aqueth chat" }
+                    }
                 }
             }
         }
@@ -894,18 +878,167 @@
         return processedBlocks.filter(block => block.trim() !== '').join('');
     }
 
-    // Funció per fer scroll mostrant l'últim missatge de l'usuari
-    function scrollToShowUserMessage() {
-        const userMessages = messagesContainer.querySelectorAll('.chat-message.user');
-        if (userMessages.length > 0) {
-            const lastUserMessage = userMessages[userMessages.length - 1];
-            // Fem scroll suau per mostrar l'últim missatge de l'usuari
-            lastUserMessage.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start',
-                inline: 'nearest'
+    // Funcions de navegació
+    function showCategories() {
+        const navContainer = messagesContainer.querySelector('.navigation-container');
+        if (navContainer) navContainer.remove();
+
+        const texts = languageTexts[selectedLanguage];
+        const categories = texts.categories;
+
+        const navDiv = document.createElement('div');
+        navDiv.className = 'navigation-container';
+        
+        navDiv.innerHTML = `
+            <div class="navigation-header">
+                <button class="nav-btn home-btn">${texts.navigation.home}</button>
+            </div>
+            <div class="category-buttons">
+                <button class="category-btn" data-category="citas">${categories.citas.title}</button>
+                <button class="category-btn" data-category="servicios">${categories.servicios.title}</button>
+                <button class="category-btn" data-category="informacion">${categories.informacion.title}</button>
+                <button class="category-btn" data-category="otras">${categories.otras.title}</button>
+            </div>
+        `;
+
+        messagesContainer.appendChild(navDiv);
+        
+        // Event listeners
+        navDiv.querySelector('.home-btn').addEventListener('click', resetNavigation);
+        navDiv.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const category = e.target.getAttribute('data-category');
+                if (categories[category].subcategories) {
+                    showSubcategories(category);
+                } else {
+                    showOptions(category);
+                }
             });
+        });
+
+        currentLevel = 'categories';
+        scrollToBottom();
+    }
+
+    function showSubcategories(categoryKey) {
+        const navContainer = messagesContainer.querySelector('.navigation-container');
+        if (navContainer) navContainer.remove();
+
+        const texts = languageTexts[selectedLanguage];
+        const category = texts.categories[categoryKey];
+        currentPath = [categoryKey];
+
+        const navDiv = document.createElement('div');
+        navDiv.className = 'navigation-container';
+        
+        let subcategoryButtons = '';
+        Object.keys(category.subcategories).forEach(subKey => {
+            const subcategory = category.subcategories[subKey];
+            subcategoryButtons += `<button class="subcategory-btn" data-subcategory="${subKey}">${subcategory.title}</button>`;
+        });
+
+        navDiv.innerHTML = `
+            <div class="navigation-header">
+                <button class="nav-btn home-btn">${texts.navigation.home}</button>
+                <button class="nav-btn back-btn">${texts.navigation.back}</button>
+                <span class="breadcrumb">${texts.navigation.breadcrumb} ${category.title}</span>
+            </div>
+            <div class="subcategory-buttons">
+                ${subcategoryButtons}
+            </div>
+        `;
+
+        messagesContainer.appendChild(navDiv);
+        
+        // Event listeners
+        navDiv.querySelector('.home-btn').addEventListener('click', resetNavigation);
+        navDiv.querySelector('.back-btn').addEventListener('click', showCategories);
+        navDiv.querySelectorAll('.subcategory-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const subcategory = e.target.getAttribute('data-subcategory');
+                showOptions(categoryKey, subcategory);
+            });
+        });
+
+        currentLevel = 'subcategories';
+        scrollToBottom();
+    }
+
+    function showOptions(categoryKey, subcategoryKey = null) {
+        const navContainer = messagesContainer.querySelector('.navigation-container');
+        if (navContainer) navContainer.remove();
+
+        const texts = languageTexts[selectedLanguage];
+        const category = texts.categories[categoryKey];
+        let options, breadcrumbText;
+
+        if (subcategoryKey) {
+            options = category.subcategories[subcategoryKey].options;
+            breadcrumbText = `${category.title} > ${category.subcategories[subcategoryKey].title}`;
+            currentPath = [categoryKey, subcategoryKey];
+        } else {
+            options = category.options;
+            breadcrumbText = category.title;
+            currentPath = [categoryKey];
         }
+
+        const navDiv = document.createElement('div');
+        navDiv.className = 'navigation-container';
+        
+        let optionButtons = '';
+        Object.keys(options).forEach(optKey => {
+            const option = options[optKey];
+            optionButtons += `<button class="option-btn" data-message="${option.message}">${option.title}</button>`;
+        });
+
+        navDiv.innerHTML = `
+            <div class="navigation-header">
+                <button class="nav-btn home-btn">${texts.navigation.home}</button>
+                <button class="nav-btn back-btn">${texts.navigation.back}</button>
+                <span class="breadcrumb">${texts.navigation.breadcrumb} ${breadcrumbText}</span>
+            </div>
+            <div class="option-buttons">
+                ${optionButtons}
+            </div>
+        `;
+
+        messagesContainer.appendChild(navDiv);
+        
+        // Event listeners
+        navDiv.querySelector('.home-btn').addEventListener('click', resetNavigation);
+        navDiv.querySelector('.back-btn').addEventListener('click', () => {
+            if (subcategoryKey) {
+                showSubcategories(categoryKey);
+            } else {
+                showCategories();
+            }
+        });
+        navDiv.querySelectorAll('.option-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const message = e.target.getAttribute('data-message');
+                sendMessage(message);
+                // Eliminar navegació després d'enviar missatge
+                navContainer.remove();
+            });
+        });
+
+        currentLevel = 'options';
+        scrollToBottom();
+    }
+
+    function resetNavigation() {
+        const navContainer = messagesContainer.querySelector('.navigation-container');
+        if (navContainer) navContainer.remove();
+        
+        currentLevel = 'categories';
+        currentPath = [];
+        showCategories();
+    }
+
+    function scrollToBottom() {
+        setTimeout(() => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 100);
     }
 
     // Funció per mostrar l'indicador de typing
@@ -1062,133 +1195,26 @@
         chatInterface.classList.add('active');
 
         try {
-            // Enviar missatge d'idioma automàticament i mostrar resposta
+            // Enviar missatge d'idioma automàticament (invisible per l'usuari)
             const languageMessage = languageTexts[selectedLanguage].systemMessage;
             await sendLanguageMessage(languageMessage);
+
+            // Mostrar missatge de salutació
+            const greetingMessage = languageTexts[selectedLanguage].greeting;
+            
+            const botMessageDiv = document.createElement('div');
+            botMessageDiv.className = 'chat-message bot';
+            botMessageDiv.innerHTML = formatText(greetingMessage);
+            messagesContainer.appendChild(botMessageDiv);
+            
+            // Mostrar categories de navegació
+            setTimeout(() => {
+                showCategories();
+            }, 500);
 
         } catch (error) {
             console.error('Error:', error);
         }
-    }
-
-    // Crear botons de categories principals
-    function createCategoryButtons() {
-        const texts = languageTexts[selectedLanguage];
-        return `
-            <div class="category-buttons">
-                <button class="category-btn" data-category="medical">${texts.categories.medical.title}</button>
-                <button class="category-btn" data-category="social">${texts.categories.social.title}</button>
-                <button class="category-btn" data-category="info">${texts.categories.info.title}</button>
-                <button class="category-btn" data-category="other">${texts.categories.other.title}</button>
-            </div>
-        `;
-    }
-
-    // Crear botons de subcategoria
-    function createSubCategoryButtons(categoryKey) {
-        const texts = languageTexts[selectedLanguage];
-        const category = texts.categories[categoryKey];
-        
-        let buttonsHTML = `<button class="back-btn">${texts.backBtn}</button>`;
-        buttonsHTML += '<div class="sub-buttons">';
-        
-        category.buttons.forEach(button => {
-            if (button.subButtons) {
-                buttonsHTML += `<button class="sub-btn" data-has-sub="true" data-text="${button.text}">${button.text} ➤</button>`;
-            } else {
-                buttonsHTML += `<button class="sub-btn" data-message="${button.message}">${button.text}</button>`;
-            }
-        });
-        
-        buttonsHTML += '</div>';
-        return buttonsHTML;
-    }
-
-    // Crear botons finals (tercer nivell)
-    function createFinalButtons(categoryKey, buttonText) {
-        const texts = languageTexts[selectedLanguage];
-        const category = texts.categories[categoryKey];
-        const parentButton = category.buttons.find(b => b.text === buttonText);
-        
-        if (!parentButton || !parentButton.subButtons) return '';
-        
-        let buttonsHTML = `<button class="back-btn">${texts.backBtn}</button>`;
-        buttonsHTML += '<div class="sub-buttons">';
-        
-        parentButton.subButtons.forEach(subButton => {
-            buttonsHTML += `<button class="sub-btn" data-message="${subButton.message}">${subButton.text}</button>`;
-        });
-        
-        buttonsHTML += '</div>';
-        return buttonsHTML;
-    }
-
-    // Afegir event listeners als botons
-    function addCategoryEventListeners(container) {
-        // Botons de categories principals
-        const categoryBtns = container.querySelectorAll('.category-btn');
-        categoryBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const category = btn.getAttribute('data-category');
-                currentCategory = category;
-                currentView = 'category';
-                
-                const newButtons = createSubCategoryButtons(category);
-                const buttonsContainer = container.querySelector('.category-buttons');
-                buttonsContainer.outerHTML = newButtons;
-                
-                addSubCategoryEventListeners(container);
-                scrollToShowUserMessage();
-            });
-        });
-    }
-
-    function addSubCategoryEventListeners(container) {
-        // Botó de tornar
-        const backBtn = container.querySelector('.back-btn');
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                if (currentView === 'subcategory') {
-                    // Tornar a subcategoria
-                    currentView = 'category';
-                    const newButtons = createSubCategoryButtons(currentCategory);
-                    const currentButtonsContainer = container.querySelector('.back-btn').parentNode;
-                    currentButtonsContainer.outerHTML = newButtons;
-                    addSubCategoryEventListeners(container);
-                } else {
-                    // Tornar a categories principals
-                    currentView = 'main';
-                    const newButtons = createCategoryButtons();
-                    const currentButtonsContainer = container.querySelector('.back-btn').parentNode;
-                    currentButtonsContainer.outerHTML = newButtons;
-                    addCategoryEventListeners(container);
-                }
-                scrollToShowUserMessage();
-            });
-        }
-
-        // Botons de subcategoria
-        const subBtns = container.querySelectorAll('.sub-btn');
-        subBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const message = btn.getAttribute('data-message');
-                const hasSub = btn.getAttribute('data-has-sub');
-                const buttonText = btn.getAttribute('data-text');
-                
-                if (hasSub === 'true') {
-                    // Mostrar botons finals
-                    currentView = 'subcategory';
-                    const newButtons = createFinalButtons(currentCategory, buttonText);
-                    const currentButtonsContainer = container.querySelector('.back-btn').parentNode;
-                    currentButtonsContainer.outerHTML = newButtons;
-                    addSubCategoryEventListeners(container);
-                    scrollToShowUserMessage();
-                } else if (message) {
-                    // Enviar missatge directament
-                    sendMessage(message);
-                }
-            });
-        });
     }
 
     // Funció per enviar el missatge d'idioma (invisible)
@@ -1199,42 +1225,19 @@
             route: config.webhook.route,
             chatInput: languageMessage,
             metadata: {
-                userId: "",
-                isLanguageSetup: true  // FLAG per indicar que és setup d'idioma
+                userId: ""
             }
         };
 
         try {
-            const response = await fetch(config.webhook.url, {
+            await fetch(config.webhook.url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(messageData)
             });
-            
-            const data = await response.json();
-            
-            // Mostrem la resposta del bot d'idioma si hi ha contingut
-            if (data && Array.isArray(data) && data[0] && data[0].output) {
-                const botResponse = data[0].output;
-                const botMessageDiv = document.createElement('div');
-                botMessageDiv.className = 'chat-message bot';
-                botMessageDiv.innerHTML = `${formatText(botResponse)}${createCategoryButtons()}`;
-                messagesContainer.appendChild(botMessageDiv);
-                
-                // Afegir event listeners als botons de categories
-                addCategoryEventListeners(botMessageDiv);
-                
-                setTimeout(() => {
-                    botMessageDiv.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start',
-                        inline: 'nearest'
-                    });
-                }, 100);
-            }
-            
+            // No mostrem la resposta d'aquest missatge a l'usuari
         } catch (error) {
             console.error('Error enviando mensaje de idioma:', error);
         }
@@ -1251,7 +1254,6 @@
             }
         };
 
-        // Mostrar missatge de l'usuari
         const userMessageDiv = document.createElement('div');
         userMessageDiv.className = 'chat-message user';
         userMessageDiv.textContent = message;
@@ -1280,8 +1282,10 @@
             botMessageDiv.innerHTML = formatText(Array.isArray(data) ? data[0].output : data.output);
             messagesContainer.appendChild(botMessageDiv);
             
-            // Fem scroll per mostrar l'últim missatge de l'usuari
-            setTimeout(scrollToShowUserMessage, 100);
+            // Fem scroll per mostrar la resposta
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 100);
         } catch (error) {
             // Amaguem l'indicador de typing en cas d'error
             hideTypingIndicator();

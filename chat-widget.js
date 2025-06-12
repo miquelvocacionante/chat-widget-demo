@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 2.2
+// Chat Widget Script - Versió 2.3
 (function() {
     // Create and inject styles
     const styles = `
@@ -314,45 +314,30 @@
         .n8n-chat-widget .category-btn {
             padding: 18px 20px;
             background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-            border: 2px solid rgba(133, 79, 255, 0.3);
+            border: 2px solid rgba(133, 79, 255, 0.2);
             color: var(--chat--color-primary);
             border-radius: 12px;
             cursor: pointer;
             font-size: 16px;
             font-weight: 600;
             font-family: inherit;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             text-align: center;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             position: relative;
-            overflow: hidden;
-        }
-
-        .n8n-chat-widget .category-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
         }
 
         .n8n-chat-widget .category-btn:hover {
             background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
             color: white;
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(133, 79, 255, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(133, 79, 255, 0.2);
             border-color: transparent;
         }
 
-        .n8n-chat-widget .category-btn:hover::before {
-            left: 100%;
-        }
-
         .n8n-chat-widget .category-btn:active {
-            transform: translateY(-1px) scale(1.01);
+            transform: translateY(0px);
+            box-shadow: 0 2px 8px rgba(133, 79, 255, 0.3);
         }
 
         .n8n-chat-widget .subcategory-btn,

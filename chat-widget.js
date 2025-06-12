@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 1.6.1
+// Chat Widget Script - Versió 1.7
 (function() {
     // Create and inject styles
     const styles = `
@@ -1062,28 +1062,9 @@
         chatInterface.classList.add('active');
 
         try {
-            // Enviar missatge d'idioma automàticament (invisible per l'usuari)
+            // Enviar missatge d'idioma automàticament i mostrar resposta
             const languageMessage = languageTexts[selectedLanguage].systemMessage;
             await sendLanguageMessage(languageMessage);
-
-            // Mostrar missatge de salutació amb botons de categories principals
-            const greetingMessage = languageTexts[selectedLanguage].greeting;
-            
-            const botMessageDiv = document.createElement('div');
-            botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.innerHTML = `${formatText(greetingMessage)}${createCategoryButtons()}`;
-            messagesContainer.appendChild(botMessageDiv);
-            
-            // Afegir event listeners als botons de categories
-            addCategoryEventListeners(botMessageDiv);
-            
-            setTimeout(() => {
-                botMessageDiv.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start',
-                    inline: 'nearest'
-                });
-            }, 100);
 
         } catch (error) {
             console.error('Error:', error);
@@ -1223,14 +1204,36 @@
         };
 
         try {
-            await fetch(config.webhook.url, {
+            const response = await fetch(config.webhook.url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(messageData)
             });
-            // No mostrem la resposta d'aquest missatge a l'usuari
+            
+            const data = await response.json();
+            
+            // Mostrem la resposta del bot d'idioma si hi ha contingut
+            if (data && Array.isArray(data) && data[0] && data[0].output) {
+                const botResponse = data[0].output;
+                const botMessageDiv = document.createElement('div');
+                botMessageDiv.className = 'chat-message bot';
+                botMessageDiv.innerHTML = `${formatText(botResponse)}${createCategoryButtons()}`;
+                messagesContainer.appendChild(botMessageDiv);
+                
+                // Afegir event listeners als botons de categories
+                addCategoryEventListeners(botMessageDiv);
+                
+                setTimeout(() => {
+                    botMessageDiv.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                }, 100);
+            }
+            
         } catch (error) {
             console.error('Error enviando mensaje de idioma:', error);
         }
@@ -1247,6 +1250,7 @@
             }
         };
 
+        // Mostrar missatge de l'usuari
         const userMessageDiv = document.createElement('div');
         userMessageDiv.className = 'chat-message user';
         userMessageDiv.textContent = message;

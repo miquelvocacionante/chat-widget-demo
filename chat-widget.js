@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 2.8
+// Chat Widget Script - Versió 2.7
 (function() {
     // Create and inject styles
     const styles = `
@@ -1115,11 +1115,11 @@
         `;
         messagesContainer.appendChild(typingDiv);
         
-        // Fem scroll per mostrar l'indicador complet
+        // Fem scroll per mostrar l'indicador
         setTimeout(() => {
             typingDiv.scrollIntoView({ 
                 behavior: 'smooth', 
-                block: 'center',
+                block: 'end',
                 inline: 'nearest'
             });
         }, 100);

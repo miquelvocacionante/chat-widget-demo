@@ -286,24 +286,23 @@
         /* Estils per categories principals */
         .n8n-chat-widget .category-buttons {
             margin: 16px 0;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 8px;
         }
 
         .n8n-chat-widget .category-btn {
-            padding: 16px 12px;
+            padding: 14px 16px;
             background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             font-family: inherit;
             transition: all 0.3s;
             text-align: center;
-            line-height: 1.3;
         }
 
         .n8n-chat-widget .category-btn:hover {
@@ -1076,9 +1075,7 @@
             messagesContainer.appendChild(botMessageDiv);
             
             // Afegir event listeners als botons de categories
-            setTimeout(() => {
-                addCategoryEventListeners(botMessageDiv);
-            }, 100);
+            addCategoryEventListeners(botMessageDiv);
             
             setTimeout(() => {
                 botMessageDiv.scrollIntoView({ 
@@ -1150,9 +1147,7 @@
         // Botons de categories principals
         const categoryBtns = container.querySelectorAll('.category-btn');
         categoryBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+            btn.addEventListener('click', () => {
                 const category = btn.getAttribute('data-category');
                 currentCategory = category;
                 currentView = 'category';
@@ -1162,6 +1157,7 @@
                 buttonsContainer.outerHTML = newButtons;
                 
                 addSubCategoryEventListeners(container);
+                scrollToShowUserMessage();
             });
         });
     }
@@ -1170,33 +1166,30 @@
         // Botó de tornar
         const backBtn = container.querySelector('.back-btn');
         if (backBtn) {
-            backBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+            backBtn.addEventListener('click', () => {
                 if (currentView === 'subcategory') {
                     // Tornar a subcategoria
                     currentView = 'category';
                     const newButtons = createSubCategoryButtons(currentCategory);
-                    const oldContainer = container.querySelector('.back-btn').parentNode;
-                    oldContainer.outerHTML = newButtons;
+                    const currentButtonsContainer = container.querySelector('.back-btn').parentNode;
+                    currentButtonsContainer.outerHTML = newButtons;
                     addSubCategoryEventListeners(container);
                 } else {
                     // Tornar a categories principals
                     currentView = 'main';
                     const newButtons = createCategoryButtons();
-                    const oldContainer = container.querySelector('.back-btn').parentNode;
-                    oldContainer.outerHTML = newButtons;
+                    const currentButtonsContainer = container.querySelector('.back-btn').parentNode;
+                    currentButtonsContainer.outerHTML = newButtons;
                     addCategoryEventListeners(container);
                 }
+                scrollToShowUserMessage();
             });
         }
 
         // Botons de subcategoria
         const subBtns = container.querySelectorAll('.sub-btn');
         subBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+            btn.addEventListener('click', () => {
                 const message = btn.getAttribute('data-message');
                 const hasSub = btn.getAttribute('data-has-sub');
                 const buttonText = btn.getAttribute('data-text');
@@ -1205,11 +1198,12 @@
                     // Mostrar botons finals
                     currentView = 'subcategory';
                     const newButtons = createFinalButtons(currentCategory, buttonText);
-                    const oldContainer = container.querySelector('.back-btn').parentNode;
-                    oldContainer.outerHTML = newButtons;
+                    const currentButtonsContainer = container.querySelector('.back-btn').parentNode;
+                    currentButtonsContainer.outerHTML = newButtons;
                     addSubCategoryEventListeners(container);
+                    scrollToShowUserMessage();
                 } else if (message) {
-                    // Enviar missatge
+                    // Enviar missatge directament
                     sendMessage(message);
                 }
             });

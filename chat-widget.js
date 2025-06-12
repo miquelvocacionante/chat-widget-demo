@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 1.7
+// Chat Widget Script - Versió 1.8
 (function() {
     // Create and inject styles
     const styles = `
@@ -1199,7 +1199,8 @@
             route: config.webhook.route,
             chatInput: languageMessage,
             metadata: {
-                userId: ""
+                userId: "",
+                isLanguageSetup: true  // FLAG per indicar que és setup d'idioma
             }
         };
 

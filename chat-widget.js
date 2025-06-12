@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 2.7
+// Chat Widget Script - Versió 2.8
 (function() {
     // Create and inject styles
     const styles = `
@@ -977,7 +977,9 @@
         });
 
         currentLevel = 'categories';
-        scrollToBottom();
+        setTimeout(() => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 100);
     }
 
     function showSubcategories(categoryKey) {
@@ -1021,7 +1023,9 @@
         });
 
         currentLevel = 'subcategories';
-        scrollToBottom();
+        setTimeout(() => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 100);
     }
 
     function showOptions(categoryKey, subcategoryKey = null) {
@@ -1083,7 +1087,9 @@
         });
 
         currentLevel = 'options';
-        scrollToBottom();
+        setTimeout(() => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 100);
     }
 
     function resetNavigation() {
@@ -1092,13 +1098,23 @@
         
         currentLevel = 'categories';
         currentPath = [];
-        showCategories();
-    }
-
-    function scrollToBottom() {
         setTimeout(() => {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }, 100);
+    }
+
+    // Funció per fer scroll mostrant l'últim missatge de l'usuari
+    function scrollToShowUserMessage() {
+        const userMessages = messagesContainer.querySelectorAll('.chat-message.user');
+        if (userMessages.length > 0) {
+            const lastUserMessage = userMessages[userMessages.length - 1];
+            // Fem scroll suau per mostrar l'últim missatge de l'usuari a la part superior
+            lastUserMessage.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start',
+                inline: 'nearest'
+            });
+        }
     }
 
     // Funció per mostrar l'indicador de typing
@@ -1342,10 +1358,8 @@
             botMessageDiv.innerHTML = formatText(Array.isArray(data) ? data[0].output : data.output);
             messagesContainer.appendChild(botMessageDiv);
             
-            // Fem scroll per mostrar la resposta
-            setTimeout(() => {
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }, 100);
+            // Fem scroll per mostrar l'últim missatge de l'usuari
+            setTimeout(scrollToShowUserMessage, 100);
         } catch (error) {
             // Amaguem l'indicador de typing en cas d'error
             hideTypingIndicator();

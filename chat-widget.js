@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 2.3
+// Chat Widget Script - Versió 2.4
 (function() {
     // Create and inject styles
     const styles = `
@@ -16,8 +16,8 @@
             right: 20px;
             z-index: 1000;
             display: none;
-            width: 380px;
-            height: 600px;
+            width: min(380px, calc(100vw - 40px));
+            height: min(600px, calc(100vh - 80px));
             background: var(--chat--color-background);
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(133, 79, 255, 0.15);
@@ -29,6 +29,34 @@
         .n8n-chat-widget .chat-container.position-left {
             right: auto;
             left: 20px;
+        }
+
+        /* Responsive per mòbils */
+        @media (max-width: 480px) {
+            .n8n-chat-widget .chat-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+                border: none;
+            }
+
+            .n8n-chat-widget .chat-toggle {
+                bottom: 15px;
+                right: 15px;
+                width: 50px;
+                height: 50px;
+            }
+
+            .n8n-chat-widget .chat-toggle.position-left {
+                right: auto;
+                left: 15px;
+            }
         }
 
         .n8n-chat-widget .chat-container.open {
@@ -455,7 +483,9 @@
 
         .n8n-chat-widget .chat-input textarea {
             flex: 1;
-            padding: 12px;
+            padding: 16px;
+            min-height: 60px;
+            max-height: 120px;
             border: 1px solid rgba(133, 79, 255, 0.2);
             border-radius: 8px;
             background: var(--chat--color-background);
@@ -463,6 +493,8 @@
             resize: none;
             font-family: inherit;
             font-size: 14px;
+            line-height: 1.4;
+            overflow-y: auto;
         }
 
         .n8n-chat-widget .chat-input textarea::placeholder {

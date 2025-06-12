@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 2.6
+// Chat Widget Script - Versió 2.7
 (function() {
     // Create and inject styles
     const styles = `
@@ -483,9 +483,9 @@
 
         .n8n-chat-widget .chat-input textarea {
             flex: 1;
-            padding: 14px;
-            min-height: 44px;
-            max-height: 88px;
+            padding: 12px;
+            min-height: 38px;
+            max-height: 76px;
             border: 1px solid rgba(133, 79, 255, 0.2);
             border-radius: 8px;
             background: var(--chat--color-background);

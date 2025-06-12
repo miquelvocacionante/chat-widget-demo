@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 2.9
+// Chat Widget Script - Versió 2.8
 (function() {
     // Create and inject styles
     const styles = `
@@ -424,7 +424,7 @@
         /* Animació de typing indicator */
         .n8n-chat-widget .typing-indicator {
             padding: 12px 16px;
-            margin: 8px 0 16px 0;
+            margin: 8px 0;
             border-radius: 12px;
             max-width: 80%;
             background: var(--chat--color-background);
@@ -1097,14 +1097,7 @@
 
     function scrollToBottom() {
         setTimeout(() => {
-            const containerHeight = messagesContainer.clientHeight;
-            const scrollHeight = messagesContainer.scrollHeight;
-            const optimalPosition = scrollHeight - containerHeight - 40; // 40px de marge
-            
-            messagesContainer.scrollTo({
-                top: Math.max(0, optimalPosition),
-                behavior: 'smooth'
-            });
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }, 100);
     }
 
@@ -1122,15 +1115,12 @@
         `;
         messagesContainer.appendChild(typingDiv);
         
-        // Scroll personalitzat amb marge per l'indicador de typing
+        // Fem scroll per mostrar l'indicador complet
         setTimeout(() => {
-            const containerHeight = messagesContainer.clientHeight;
-            const scrollHeight = messagesContainer.scrollHeight;
-            const optimalPosition = scrollHeight - containerHeight - 60; // 60px de marge
-            
-            messagesContainer.scrollTo({
-                top: Math.max(0, optimalPosition),
-                behavior: 'smooth'
+            typingDiv.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center',
+                inline: 'nearest'
             });
         }, 100);
     }
@@ -1352,16 +1342,9 @@
             botMessageDiv.innerHTML = formatText(Array.isArray(data) ? data[0].output : data.output);
             messagesContainer.appendChild(botMessageDiv);
             
-            // Fem scroll amb marge per mostrar la resposta
+            // Fem scroll per mostrar la resposta
             setTimeout(() => {
-                const containerHeight = messagesContainer.clientHeight;
-                const scrollHeight = messagesContainer.scrollHeight;
-                const optimalPosition = scrollHeight - containerHeight - 50; // 50px de marge
-                
-                messagesContainer.scrollTo({
-                    top: Math.max(0, optimalPosition),
-                    behavior: 'smooth'
-                });
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }, 100);
         } catch (error) {
             // Amaguem l'indicador de typing en cas d'error

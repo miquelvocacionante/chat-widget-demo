@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 3.2
+// Chat Widget Script - Versió 3.4
 (function() {
     // Create and inject styles
     const styles = `
@@ -1102,7 +1102,35 @@
             // Convertim salts de línia simples en <br> dins del bloc
             const processedBlock = block.replace(/\n/g, '<br>');
             return `<p>${processedBlock}</p>`;
-        });
+        // Initialize mobile optimizations
+    preventZoom();
+    adjustHeightForSafari();
+    
+    // Setup mobile keyboard handling after interface is ready
+    setTimeout(() => {
+        if (window.innerWidth <= 480) {
+            const textarea = document.querySelector('.n8n-chat-widget textarea');
+            const chatInput = document.querySelector('.n8n-chat-widget .chat-input');
+            
+            if (textarea && chatInput) {
+                textarea.addEventListener('focus', () => {
+                    // Ensure input area stays visible when keyboard appears
+                    setTimeout(() => {
+                        chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }, 300);
+                });
+
+                textarea.addEventListener('blur', () => {
+                    // Reset viewport when keyboard disappears
+                    setTimeout(() => {
+                        const vh = window.innerHeight * 0.01;
+                        document.documentElement.style.setProperty('--vh', `${vh}px`);
+                    }, 100);
+                });
+            }
+        }
+    }, 1000);
+})();
 
         // 4. Filtrem blocs buits i els unim
         return processedBlocks.filter(block => block.trim() !== '').join('');
@@ -1485,7 +1513,7 @@
 
     // Gestió de selecció d'idioma
     languageButtons.forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
             const lang = btn.getAttribute('data-lang');
             selectedLanguage = lang;
             
@@ -1504,8 +1532,42 @@
                 footerLink.textContent = texts.poweredBy;
             }
             
-            // Iniciar xat automàticament després de seleccionar idioma
-            await startNewConversation();
+            // Mostrar el botó "Envia'ns un missatge" després de seleccionar idioma
+            newChatBtn.style.display = 'flex';
+            
+            // Actualitzar el text del botó segons l'idioma
+            const btnText = newChatBtn.querySelector('.btn-text');
+            if (btnText) {
+                btnText.textContent = texts.btnText;
+            }
+            
+            // NO iniciar el xat automàticament
+        });
+    });
+
+    // Event listener per al botó "Envia'ns un missatge"
+    newChatBtn.addEventListener('click', async () => {
+        await startNewConversation();
+    });
+
+    // Gestió del toggle button per obrir/tancar el xat
+    toggleButton.addEventListener('click', () => {
+        const isOpen = chatContainer.classList.contains('open');
+        
+        if (isOpen) {
+            // Tancar el xat
+            chatContainer.classList.remove('open');
+        } else {
+            // Obrir el xat
+            chatContainer.classList.add('open');
+        }
+    });
+
+    // Gestió dels botons de tancar
+    const closeButtons = chatContainer.querySelectorAll('.close-button');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            chatContainer.classList.remove('open');
         });
     });
 
@@ -1551,7 +1613,7 @@
 
         currentSessionId = generateUUID();
         
-        // Canviar a la interfície de xat immediatament
+        // Ocultar la pantalla de benvinguda i mostrar la interfície de xat
         chatContainer.querySelector('.brand-header').style.display = 'none';
         chatContainer.querySelector('.new-conversation').style.display = 'none';
         chatInterface.classList.add('active');

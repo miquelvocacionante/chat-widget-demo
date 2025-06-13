@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 3.8 - URGENT FIX amb colors correctes
+// Chat Widget Script - Versió 3.1
 (function() {
     // Create and inject styles
     const styles = `
@@ -35,49 +35,40 @@
         @media (max-width: 480px) {
             .n8n-chat-widget .chat-container {
                 position: fixed;
-                top: env(safe-area-inset-top, 0);
+                top: 0;
                 left: 0;
                 right: 0;
-                bottom: env(safe-area-inset-bottom, 0);
+                bottom: 0;
                 width: 100vw;
-                height: calc(var(--vh, 1vh) * 100);
-                height: -webkit-fill-available;
+                height: 100vh;
+                height: 100dvh; /* Dynamic viewport height per a millor compatibilitat */
                 border-radius: 0;
                 box-shadow: none;
                 border: none;
                 display: flex;
                 flex-direction: column;
-                overflow: hidden;
             }
 
             .n8n-chat-widget .brand-header {
                 flex-shrink: 0;
-                padding: 10px 14px;
+                padding: 12px 16px;
                 border-bottom: 1px solid rgba(133, 79, 255, 0.1);
             }
 
-            .n8n-chat-widget .chat-interface {
-                display: flex;
-                flex-direction: column;
-                height: 100%;
-                flex: 1;
-                overflow: hidden;
-            }
-
             .n8n-chat-widget .chat-messages {
-                flex: 1 1 auto;
+                flex: 1;
                 overflow-y: auto;
-                padding: 10px;
+                padding: 12px;
                 background: var(--chat--color-background);
                 display: flex;
                 flex-direction: column;
                 -webkit-overflow-scrolling: touch;
                 overscroll-behavior: contain;
-                min-height: 0;
+                min-height: 0; /* Important per flex */
             }
 
             .n8n-chat-widget .navigation-container {
-                padding: 10px;
+                padding: 12px;
                 background: var(--chat--color-background);
                 border-bottom: none;
                 flex-shrink: 0;
@@ -85,7 +76,7 @@
 
             .n8n-chat-widget .chat-input {
                 flex-shrink: 0;
-                padding: 10px;
+                padding: 12px;
                 background: var(--chat--color-background);
                 border-top: 1px solid rgba(133, 79, 255, 0.1);
                 display: flex;
@@ -157,17 +148,10 @@
             }
         }
 
-        /* Responsive específic per iPhone SE i pantalles molt petites */
+        /* Responsive per pantalles molt petites (iPhone SE) */
         @media (max-width: 375px) {
-            .n8n-chat-widget .chat-container {
-                height: 100%;
-                height: -webkit-fill-available;
-                max-height: 100vh;
-                max-height: -webkit-fill-available;
-            }
-
             .n8n-chat-widget .brand-header {
-                padding: 8px 12px;
+                padding: 10px 12px;
             }
 
             .n8n-chat-widget .brand-header span {
@@ -175,25 +159,17 @@
             }
 
             .n8n-chat-widget .navigation-container {
-                padding: 8px;
-            }
-
-            .n8n-chat-widget .chat-messages {
-                padding: 8px;
-            }
-
-            .n8n-chat-widget .chat-input {
-                padding: 8px;
+                padding: 10px;
             }
 
             .n8n-chat-widget .category-btn {
-                padding: 10px 14px;
+                padding: 12px 16px;
                 font-size: 14px;
             }
 
             .n8n-chat-widget .subcategory-btn,
             .n8n-chat-widget .option-btn {
-                padding: 8px 12px;
+                padding: 10px 14px;
                 font-size: 13px;
             }
 
@@ -206,22 +182,16 @@
                 font-size: 11px;
             }
 
+            .n8n-chat-widget .chat-input {
+                padding: 10px;
+            }
+
             .n8n-chat-widget .chat-footer {
                 padding: 4px 6px;
             }
 
             .n8n-chat-widget .chat-footer a {
                 font-size: 10px;
-            }
-        }
-
-        /* Safe area support per dispositius amb notch */
-        @supports (padding: env(safe-area-inset-top)) {
-            @media (max-width: 480px) {
-                .n8n-chat-widget .chat-container {
-                    padding-top: env(safe-area-inset-top);
-                    padding-bottom: env(safe-area-inset-bottom);
-                }
             }
         }
 
@@ -685,25 +655,22 @@
         }
 
         .n8n-chat-widget .chat-toggle {
-            position: fixed !important;
-            bottom: 20px !important;
-            right: 20px !important;
-            width: 60px !important;
-            height: 60px !important;
-            border-radius: 30px !important;
-            background: var(--chat--color-primary, #008fce) !important;
-            background: linear-gradient(135deg, var(--chat--color-primary, #008fce) 0%, var(--chat--color-secondary, #006ba3) 100%) !important;
-            color: white !important;
-            border: none !important;
-            cursor: pointer !important;
-            box-shadow: 0 4px 12px rgba(0, 143, 206, 0.3) !important;
-            z-index: 9999 !important;
-            transition: transform 0.3s !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            opacity: 1 !important;
-            visibility: visible !important;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(133, 79, 255, 0.3);
+            z-index: 999;
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .n8n-chat-widget .chat-toggle.position-left {
@@ -1105,91 +1072,7 @@
             // Convertim salts de línia simples en <br> dins del bloc
             const processedBlock = block.replace(/\n/g, '<br>');
             return `<p>${processedBlock}</p>`;
-        // FALLBACK URGENT - Assegurar que el widget sigui sempre visible
-    setTimeout(() => {
-        const toggleBtn = document.querySelector('.n8n-chat-widget .chat-toggle');
-        if (toggleBtn) {
-            // Obtenir colors de la configuració o usar fallbacks
-            const primaryColor = config.style.primaryColor || '#008fce';
-            const secondaryColor = config.style.secondaryColor || '#006ba3';
-            
-            // Forçar visibilitat amb JavaScript
-            toggleBtn.style.cssText = `
-                position: fixed !important;
-                bottom: 20px !important;
-                right: 20px !important;
-                width: 60px !important;
-                height: 60px !important;
-                border-radius: 30px !important;
-                background: linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%) !important;
-                color: white !important;
-                border: none !important;
-                cursor: pointer !important;
-                box-shadow: 0 4px 12px rgba(0, 143, 206, 0.3) !important;
-                z-index: 9999 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                opacity: 1 !important;
-                visibility: visible !important;
-            `;
-        }
-        
-        // Verificar si el botó està visible
-        if (!toggleBtn || toggleBtn.offsetParent === null) {
-            console.error('URGENT: Widget toggle not visible, creating fallback');
-            // Crear botó de fallback si no funciona
-            const fallbackBtn = document.createElement('div');
-            fallbackBtn.innerHTML = '💬';
-            fallbackBtn.style.cssText = `
-                position: fixed !important;
-                bottom: 20px !important;
-                right: 20px !important;
-                width: 60px !important;
-                height: 60px !important;
-                border-radius: 30px !important;
-                background: ${config.style.primaryColor || '#008fce'} !important;
-                color: white !important;
-                font-size: 24px !important;
-                cursor: pointer !important;
-                z-index: 99999 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                box-shadow: 0 4px 12px rgba(0, 143, 206, 0.3) !important;
-            `;
-            fallbackBtn.onclick = () => chatContainer.classList.toggle('open');
-            document.body.appendChild(fallbackBtn);
-        }
-    }, 500);
-    preventZoom();
-    adjustHeightForSafari();
-    
-    // Setup mobile keyboard handling after interface is ready
-    setTimeout(() => {
-        if (window.innerWidth <= 480) {
-            const textarea = document.querySelector('.n8n-chat-widget textarea');
-            const chatInput = document.querySelector('.n8n-chat-widget .chat-input');
-            
-            if (textarea && chatInput) {
-                textarea.addEventListener('focus', () => {
-                    // Ensure input area stays visible when keyboard appears
-                    setTimeout(() => {
-                        chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                    }, 300);
-                });
-
-                textarea.addEventListener('blur', () => {
-                    // Reset viewport when keyboard disappears
-                    setTimeout(() => {
-                        const vh = window.innerHeight * 0.01;
-                        document.documentElement.style.setProperty('--vh', `${vh}px`);
-                    }, 100);
-                });
-            }
-        }
-    }, 1000);
-})();
+        });
 
         // 4. Filtrem blocs buits i els unim
         return processedBlocks.filter(block => block.trim() !== '').join('');
@@ -1237,31 +1120,6 @@
                 event.preventDefault();
             }
         }, { passive: false });
-    }
-
-    // Ajustar altura per Safari i pantalles petites
-    function adjustHeightForSafari() {
-        if (window.innerWidth <= 480) {
-            const chatContainer = document.querySelector('.n8n-chat-widget .chat-container');
-            if (chatContainer) {
-                // Calcular altura real disponible
-                const vh = window.innerHeight * 0.01;
-                document.documentElement.style.setProperty('--vh', `${vh}px`);
-                
-                // Listener per canvis d'orientació i resize
-                window.addEventListener('resize', () => {
-                    const vh = window.innerHeight * 0.01;
-                    document.documentElement.style.setProperty('--vh', `${vh}px`);
-                });
-
-                window.addEventListener('orientationchange', () => {
-                    setTimeout(() => {
-                        const vh = window.innerHeight * 0.01;
-                        document.documentElement.style.setProperty('--vh', `${vh}px`);
-                    }, 100);
-                });
-            }
-        }
     }
 
     // Handle mobile keyboard appearance
@@ -1572,7 +1430,7 @@
 
     // Gestió de selecció d'idioma
     languageButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             const lang = btn.getAttribute('data-lang');
             selectedLanguage = lang;
             
@@ -1591,72 +1449,17 @@
                 footerLink.textContent = texts.poweredBy;
             }
             
-            // Mostrar el botó "Envia'ns un missatge" després de seleccionar idioma
-            newChatBtn.style.display = 'flex';
-            
-            // Actualitzar el text del botó segons l'idioma
-            const btnText = newChatBtn.querySelector('.btn-text');
-            if (btnText) {
-                btnText.textContent = texts.btnText;
-            }
-            
-            // NO iniciar el xat automàticament
-        });
-    });
-
-    // Event listener per al botó "Envia'ns un missatge"
-    newChatBtn.addEventListener('click', async () => {
-        await startNewConversation();
-    });
-
-    // Gestió del toggle button per obrir/tancar el xat
-    toggleButton.addEventListener('click', () => {
-        const isOpen = chatContainer.classList.contains('open');
-        
-        if (isOpen) {
-            // Tancar el xat
-            chatContainer.classList.remove('open');
-        } else {
-            // Obrir el xat
-            chatContainer.classList.add('open');
-        }
-    });
-
-    // Gestió dels botons de tancar
-    const closeButtons = chatContainer.querySelectorAll('.close-button');
-    closeButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            chatContainer.classList.remove('open');
+            // Iniciar xat automàticament després de seleccionar idioma
+            await startNewConversation();
         });
     });
 
     // Initialize mobile optimizations
     preventZoom();
-    adjustHeightForSafari();
     
     // Setup mobile keyboard handling after interface is ready
     setTimeout(() => {
-        if (window.innerWidth <= 480) {
-            const textarea = document.querySelector('.n8n-chat-widget textarea');
-            const chatInput = document.querySelector('.n8n-chat-widget .chat-input');
-            
-            if (textarea && chatInput) {
-                textarea.addEventListener('focus', () => {
-                    // Ensure input area stays visible when keyboard appears
-                    setTimeout(() => {
-                        chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                    }, 300);
-                });
-
-                textarea.addEventListener('blur', () => {
-                    // Reset viewport when keyboard disappears
-                    setTimeout(() => {
-                        const vh = window.innerHeight * 0.01;
-                        document.documentElement.style.setProperty('--vh', `${vh}px`);
-                    }, 100);
-                });
-            }
-        }
+        handleMobileKeyboard();
     }, 1000);
 
     function generateUUID() {
@@ -1672,7 +1475,7 @@
 
         currentSessionId = generateUUID();
         
-        // Ocultar la pantalla de benvinguda i mostrar la interfície de xat
+        // Canviar a la interfície de xat immediatament
         chatContainer.querySelector('.brand-header').style.display = 'none';
         chatContainer.querySelector('.new-conversation').style.display = 'none';
         chatInterface.classList.add('active');

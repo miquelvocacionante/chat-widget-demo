@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 3.1
+// Chat Widget Script - Versió 3.0
 (function() {
     // Create and inject styles
     const styles = `
@@ -31,8 +31,14 @@
             left: 20px;
         }
 
-        /* Responsive per mòbils - COMPLETAMENT RESPONSIVE */
+        /* Responsive per mòbils - PANTALLA COMPLETA SEMPRE */
         @media (max-width: 480px) {
+            body {
+                overflow-x: hidden;
+                -webkit-text-size-adjust: 100%;
+                -ms-text-size-adjust: 100%;
+            }
+
             .n8n-chat-widget .chat-container {
                 position: fixed;
                 top: 0;
@@ -41,47 +47,32 @@
                 bottom: 0;
                 width: 100vw;
                 height: 100vh;
-                height: 100dvh; /* Dynamic viewport height per a millor compatibilitat */
+                max-width: 100vw;
+                max-height: 100vh;
                 border-radius: 0;
                 box-shadow: none;
                 border: none;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .n8n-chat-widget .brand-header {
-                flex-shrink: 0;
-                padding: 12px 16px;
-                border-bottom: 1px solid rgba(133, 79, 255, 0.1);
-            }
-
-            .n8n-chat-widget .chat-messages {
-                flex: 1;
-                overflow-y: auto;
-                padding: 12px;
-                background: var(--chat--color-background);
-                display: flex;
-                flex-direction: column;
-                -webkit-overflow-scrolling: touch;
-                overscroll-behavior: contain;
-                min-height: 0; /* Important per flex */
-            }
-
-            .n8n-chat-widget .navigation-container {
-                padding: 12px;
-                background: var(--chat--color-background);
-                border-bottom: none;
-                flex-shrink: 0;
+                transform: none;
+                zoom: 1;
+                -webkit-transform: scale(1);
+                -moz-transform: scale(1);
+                -ms-transform: scale(1);
+                transform: scale(1);
             }
 
             .n8n-chat-widget .chat-input {
-                flex-shrink: 0;
                 padding: 12px;
                 background: var(--chat--color-background);
                 border-top: 1px solid rgba(133, 79, 255, 0.1);
                 display: flex;
                 gap: 8px;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100vw;
                 box-sizing: border-box;
+                z-index: 1001;
             }
 
             .n8n-chat-widget .chat-input textarea {
@@ -101,14 +92,20 @@
                 -webkit-appearance: none;
                 appearance: none;
                 box-sizing: border-box;
+                width: 100%;
             }
 
-            .n8n-chat-widget .chat-footer {
-                flex-shrink: 0;
-                padding: 6px 8px;
-                text-align: center;
+            .n8n-chat-widget .chat-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 16px;
+                padding-bottom: 80px;
                 background: var(--chat--color-background);
-                border-top: 1px solid rgba(133, 79, 255, 0.1);
+                display: flex;
+                flex-direction: column;
+                -webkit-overflow-scrolling: touch;
+                height: calc(100vh - 80px);
+                box-sizing: border-box;
             }
 
             .n8n-chat-widget .chat-toggle {
@@ -123,12 +120,8 @@
                 left: 15px;
             }
 
-            /* Millor scroll - només desactivar select en botons */
-            .n8n-chat-widget .nav-btn,
-            .n8n-chat-widget .category-btn,
-            .n8n-chat-widget .subcategory-btn,
-            .n8n-chat-widget .option-btn,
-            .n8n-chat-widget .language-btn {
+            /* Prevent any zooming effects */
+            .n8n-chat-widget * {
                 -webkit-touch-callout: none;
                 -webkit-user-select: none;
                 -khtml-user-select: none;
@@ -138,60 +131,11 @@
                 -webkit-tap-highlight-color: transparent;
             }
 
-            /* Permetre selecció de text en missatges i textarea */
-            .n8n-chat-widget .chat-message,
             .n8n-chat-widget .chat-input textarea {
                 -webkit-user-select: text;
                 -moz-user-select: text;
                 -ms-user-select: text;
                 user-select: text;
-            }
-        }
-
-        /* Responsive per pantalles molt petites (iPhone SE) */
-        @media (max-width: 375px) {
-            .n8n-chat-widget .brand-header {
-                padding: 10px 12px;
-            }
-
-            .n8n-chat-widget .brand-header span {
-                font-size: 16px;
-            }
-
-            .n8n-chat-widget .navigation-container {
-                padding: 10px;
-            }
-
-            .n8n-chat-widget .category-btn {
-                padding: 12px 16px;
-                font-size: 14px;
-            }
-
-            .n8n-chat-widget .subcategory-btn,
-            .n8n-chat-widget .option-btn {
-                padding: 10px 14px;
-                font-size: 13px;
-            }
-
-            .n8n-chat-widget .nav-btn {
-                padding: 6px 10px;
-                font-size: 11px;
-            }
-
-            .n8n-chat-widget .breadcrumb {
-                font-size: 11px;
-            }
-
-            .n8n-chat-widget .chat-input {
-                padding: 10px;
-            }
-
-            .n8n-chat-widget .chat-footer {
-                padding: 4px 6px;
-            }
-
-            .n8n-chat-widget .chat-footer a {
-                font-size: 10px;
             }
         }
 

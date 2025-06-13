@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 3.3
+// Chat Widget Script - Versió 3.8 - URGENT FIX amb colors correctes
 (function() {
     // Create and inject styles
     const styles = `
@@ -685,22 +685,25 @@
         }
 
         .n8n-chat-widget .chat-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 30px;
-            background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
-            color: white;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(133, 79, 255, 0.3);
-            z-index: 999;
-            transition: transform 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 30px !important;
+            background: var(--chat--color-primary, #008fce) !important;
+            background: linear-gradient(135deg, var(--chat--color-primary, #008fce) 0%, var(--chat--color-secondary, #006ba3) 100%) !important;
+            color: white !important;
+            border: none !important;
+            cursor: pointer !important;
+            box-shadow: 0 4px 12px rgba(0, 143, 206, 0.3) !important;
+            z-index: 9999 !important;
+            transition: transform 0.3s !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            opacity: 1 !important;
+            visibility: visible !important;
         }
 
         .n8n-chat-widget .chat-toggle.position-left {
@@ -1102,7 +1105,63 @@
             // Convertim salts de línia simples en <br> dins del bloc
             const processedBlock = block.replace(/\n/g, '<br>');
             return `<p>${processedBlock}</p>`;
-        // Initialize mobile optimizations
+        // FALLBACK URGENT - Assegurar que el widget sigui sempre visible
+    setTimeout(() => {
+        const toggleBtn = document.querySelector('.n8n-chat-widget .chat-toggle');
+        if (toggleBtn) {
+            // Obtenir colors de la configuració o usar fallbacks
+            const primaryColor = config.style.primaryColor || '#008fce';
+            const secondaryColor = config.style.secondaryColor || '#006ba3';
+            
+            // Forçar visibilitat amb JavaScript
+            toggleBtn.style.cssText = `
+                position: fixed !important;
+                bottom: 20px !important;
+                right: 20px !important;
+                width: 60px !important;
+                height: 60px !important;
+                border-radius: 30px !important;
+                background: linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%) !important;
+                color: white !important;
+                border: none !important;
+                cursor: pointer !important;
+                box-shadow: 0 4px 12px rgba(0, 143, 206, 0.3) !important;
+                z-index: 9999 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            `;
+        }
+        
+        // Verificar si el botó està visible
+        if (!toggleBtn || toggleBtn.offsetParent === null) {
+            console.error('URGENT: Widget toggle not visible, creating fallback');
+            // Crear botó de fallback si no funciona
+            const fallbackBtn = document.createElement('div');
+            fallbackBtn.innerHTML = '💬';
+            fallbackBtn.style.cssText = `
+                position: fixed !important;
+                bottom: 20px !important;
+                right: 20px !important;
+                width: 60px !important;
+                height: 60px !important;
+                border-radius: 30px !important;
+                background: ${config.style.primaryColor || '#008fce'} !important;
+                color: white !important;
+                font-size: 24px !important;
+                cursor: pointer !important;
+                z-index: 99999 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: 0 4px 12px rgba(0, 143, 206, 0.3) !important;
+            `;
+            fallbackBtn.onclick = () => chatContainer.classList.toggle('open');
+            document.body.appendChild(fallbackBtn);
+        }
+    }, 500);
     preventZoom();
     adjustHeightForSafari();
     
@@ -1513,7 +1572,7 @@
 
     // Gestió de selecció d'idioma
     languageButtons.forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
             const lang = btn.getAttribute('data-lang');
             selectedLanguage = lang;
             
@@ -1532,9 +1591,22 @@
                 footerLink.textContent = texts.poweredBy;
             }
             
-            // Iniciar xat automàticament després de seleccionar idioma
-            await startNewConversation();
+            // Mostrar el botó "Envia'ns un missatge" després de seleccionar idioma
+            newChatBtn.style.display = 'flex';
+            
+            // Actualitzar el text del botó segons l'idioma
+            const btnText = newChatBtn.querySelector('.btn-text');
+            if (btnText) {
+                btnText.textContent = texts.btnText;
+            }
+            
+            // NO iniciar el xat automàticament
         });
+    });
+
+    // Event listener per al botó "Envia'ns un missatge"
+    newChatBtn.addEventListener('click', async () => {
+        await startNewConversation();
     });
 
     // Gestió del toggle button per obrir/tancar el xat
@@ -1600,7 +1672,7 @@
 
         currentSessionId = generateUUID();
         
-        // Canviar a la interfície de xat immediatament
+        // Ocultar la pantalla de benvinguda i mostrar la interfície de xat
         chatContainer.querySelector('.brand-header').style.display = 'none';
         chatContainer.querySelector('.new-conversation').style.display = 'none';
         chatInterface.classList.add('active');

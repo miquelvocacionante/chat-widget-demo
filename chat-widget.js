@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 3.1
+// Chat Widget Script - Versió 3.2
 (function() {
     // Create and inject styles
     const styles = `
@@ -35,40 +35,49 @@
         @media (max-width: 480px) {
             .n8n-chat-widget .chat-container {
                 position: fixed;
-                top: 0;
+                top: env(safe-area-inset-top, 0);
                 left: 0;
                 right: 0;
-                bottom: 0;
+                bottom: env(safe-area-inset-bottom, 0);
                 width: 100vw;
-                height: 100vh;
-                height: 100dvh; /* Dynamic viewport height per a millor compatibilitat */
+                height: calc(var(--vh, 1vh) * 100);
+                height: -webkit-fill-available;
                 border-radius: 0;
                 box-shadow: none;
                 border: none;
                 display: flex;
                 flex-direction: column;
+                overflow: hidden;
             }
 
             .n8n-chat-widget .brand-header {
                 flex-shrink: 0;
-                padding: 12px 16px;
+                padding: 10px 14px;
                 border-bottom: 1px solid rgba(133, 79, 255, 0.1);
             }
 
-            .n8n-chat-widget .chat-messages {
+            .n8n-chat-widget .chat-interface {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
                 flex: 1;
+                overflow: hidden;
+            }
+
+            .n8n-chat-widget .chat-messages {
+                flex: 1 1 auto;
                 overflow-y: auto;
-                padding: 12px;
+                padding: 10px;
                 background: var(--chat--color-background);
                 display: flex;
                 flex-direction: column;
                 -webkit-overflow-scrolling: touch;
                 overscroll-behavior: contain;
-                min-height: 0; /* Important per flex */
+                min-height: 0;
             }
 
             .n8n-chat-widget .navigation-container {
-                padding: 12px;
+                padding: 10px;
                 background: var(--chat--color-background);
                 border-bottom: none;
                 flex-shrink: 0;
@@ -76,7 +85,7 @@
 
             .n8n-chat-widget .chat-input {
                 flex-shrink: 0;
-                padding: 12px;
+                padding: 10px;
                 background: var(--chat--color-background);
                 border-top: 1px solid rgba(133, 79, 255, 0.1);
                 display: flex;
@@ -148,10 +157,17 @@
             }
         }
 
-        /* Responsive per pantalles molt petites (iPhone SE) */
+        /* Responsive específic per iPhone SE i pantalles molt petites */
         @media (max-width: 375px) {
+            .n8n-chat-widget .chat-container {
+                height: 100%;
+                height: -webkit-fill-available;
+                max-height: 100vh;
+                max-height: -webkit-fill-available;
+            }
+
             .n8n-chat-widget .brand-header {
-                padding: 10px 12px;
+                padding: 8px 12px;
             }
 
             .n8n-chat-widget .brand-header span {
@@ -159,17 +175,25 @@
             }
 
             .n8n-chat-widget .navigation-container {
-                padding: 10px;
+                padding: 8px;
+            }
+
+            .n8n-chat-widget .chat-messages {
+                padding: 8px;
+            }
+
+            .n8n-chat-widget .chat-input {
+                padding: 8px;
             }
 
             .n8n-chat-widget .category-btn {
-                padding: 12px 16px;
+                padding: 10px 14px;
                 font-size: 14px;
             }
 
             .n8n-chat-widget .subcategory-btn,
             .n8n-chat-widget .option-btn {
-                padding: 10px 14px;
+                padding: 8px 12px;
                 font-size: 13px;
             }
 
@@ -182,16 +206,22 @@
                 font-size: 11px;
             }
 
-            .n8n-chat-widget .chat-input {
-                padding: 10px;
-            }
-
             .n8n-chat-widget .chat-footer {
                 padding: 4px 6px;
             }
 
             .n8n-chat-widget .chat-footer a {
                 font-size: 10px;
+            }
+        }
+
+        /* Safe area support per dispositius amb notch */
+        @supports (padding: env(safe-area-inset-top)) {
+            @media (max-width: 480px) {
+                .n8n-chat-widget .chat-container {
+                    padding-top: env(safe-area-inset-top);
+                    padding-bottom: env(safe-area-inset-bottom);
+                }
             }
         }
 
@@ -1122,6 +1152,31 @@
         }, { passive: false });
     }
 
+    // Ajustar altura per Safari i pantalles petites
+    function adjustHeightForSafari() {
+        if (window.innerWidth <= 480) {
+            const chatContainer = document.querySelector('.n8n-chat-widget .chat-container');
+            if (chatContainer) {
+                // Calcular altura real disponible
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+                
+                // Listener per canvis d'orientació i resize
+                window.addEventListener('resize', () => {
+                    const vh = window.innerHeight * 0.01;
+                    document.documentElement.style.setProperty('--vh', `${vh}px`);
+                });
+
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => {
+                        const vh = window.innerHeight * 0.01;
+                        document.documentElement.style.setProperty('--vh', `${vh}px`);
+                    }, 100);
+                });
+            }
+        }
+    }
+
     // Handle mobile keyboard appearance
     function handleMobileKeyboard() {
         if (window.innerWidth <= 480) {
@@ -1456,10 +1511,31 @@
 
     // Initialize mobile optimizations
     preventZoom();
+    adjustHeightForSafari();
     
     // Setup mobile keyboard handling after interface is ready
     setTimeout(() => {
-        handleMobileKeyboard();
+        if (window.innerWidth <= 480) {
+            const textarea = document.querySelector('.n8n-chat-widget textarea');
+            const chatInput = document.querySelector('.n8n-chat-widget .chat-input');
+            
+            if (textarea && chatInput) {
+                textarea.addEventListener('focus', () => {
+                    // Ensure input area stays visible when keyboard appears
+                    setTimeout(() => {
+                        chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }, 300);
+                });
+
+                textarea.addEventListener('blur', () => {
+                    // Reset viewport when keyboard disappears
+                    setTimeout(() => {
+                        const vh = window.innerHeight * 0.01;
+                        document.documentElement.style.setProperty('--vh', `${vh}px`);
+                    }, 100);
+                });
+            }
+        }
     }, 1000);
 
     function generateUUID() {

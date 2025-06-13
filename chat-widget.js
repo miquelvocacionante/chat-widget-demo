@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 2.9
+// Chat Widget Script - Versió 3.0
 (function() {
     // Create and inject styles
     const styles = `
@@ -31,8 +31,14 @@
             left: 20px;
         }
 
-        /* Responsive per mòbils */
+        /* Responsive per mòbils - PANTALLA COMPLETA SEMPRE */
         @media (max-width: 480px) {
+            body {
+                overflow-x: hidden;
+                -webkit-text-size-adjust: 100%;
+                -ms-text-size-adjust: 100%;
+            }
+
             .n8n-chat-widget .chat-container {
                 position: fixed;
                 top: 0;
@@ -41,10 +47,17 @@
                 bottom: 0;
                 width: 100vw;
                 height: 100vh;
+                max-width: 100vw;
                 max-height: 100vh;
                 border-radius: 0;
                 box-shadow: none;
                 border: none;
+                transform: none;
+                zoom: 1;
+                -webkit-transform: scale(1);
+                -moz-transform: scale(1);
+                -ms-transform: scale(1);
+                transform: scale(1);
             }
 
             .n8n-chat-widget .chat-input {
@@ -53,10 +66,13 @@
                 border-top: 1px solid rgba(133, 79, 255, 0.1);
                 display: flex;
                 gap: 8px;
-                position: sticky;
+                position: fixed;
                 bottom: 0;
                 left: 0;
                 right: 0;
+                width: 100vw;
+                box-sizing: border-box;
+                z-index: 1001;
             }
 
             .n8n-chat-widget .chat-input textarea {
@@ -75,17 +91,21 @@
                 overflow-y: auto;
                 -webkit-appearance: none;
                 appearance: none;
+                box-sizing: border-box;
+                width: 100%;
             }
 
             .n8n-chat-widget .chat-messages {
                 flex: 1;
                 overflow-y: auto;
                 padding: 16px;
+                padding-bottom: 80px;
                 background: var(--chat--color-background);
                 display: flex;
                 flex-direction: column;
-                padding-bottom: 20px;
                 -webkit-overflow-scrolling: touch;
+                height: calc(100vh - 80px);
+                box-sizing: border-box;
             }
 
             .n8n-chat-widget .chat-toggle {
@@ -98,6 +118,24 @@
             .n8n-chat-widget .chat-toggle.position-left {
                 right: auto;
                 left: 15px;
+            }
+
+            /* Prevent any zooming effects */
+            .n8n-chat-widget * {
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .n8n-chat-widget .chat-input textarea {
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
             }
         }
 
@@ -984,17 +1022,48 @@
         return processedBlocks.filter(block => block.trim() !== '').join('');
     }
 
-    // Prevent zoom on iOS/Android when focusing input
+    // Prevent zoom and maintain fullscreen on mobile
     function preventZoom() {
-        const viewport = document.querySelector('meta[name=viewport]');
+        // Set viewport to prevent zoom and maintain scale
+        let viewport = document.querySelector('meta[name=viewport]');
         if (viewport) {
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover');
         } else {
             const newViewport = document.createElement('meta');
             newViewport.name = 'viewport';
-            newViewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+            newViewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover';
             document.head.appendChild(newViewport);
         }
+
+        // Prevent zoom gestures
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('gesturechange', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('gestureend', function(e) {
+            e.preventDefault();
+        });
+
+        // Prevent double-tap zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Prevent pinch zoom
+        document.addEventListener('touchmove', function(event) {
+            if (event.scale !== 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
     }
 
     // Handle mobile keyboard appearance

@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 3.6
+// Chat Widget Script - Versió 3.3
 (function() {
     // Create and inject styles
     const styles = `
@@ -1513,7 +1513,7 @@
 
     // Gestió de selecció d'idioma
     languageButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             const lang = btn.getAttribute('data-lang');
             selectedLanguage = lang;
             
@@ -1532,22 +1532,9 @@
                 footerLink.textContent = texts.poweredBy;
             }
             
-            // Mostrar el botó "Envia'ns un missatge" després de seleccionar idioma
-            newChatBtn.style.display = 'flex';
-            
-            // Actualitzar el text del botó segons l'idioma
-            const btnText = newChatBtn.querySelector('.btn-text');
-            if (btnText) {
-                btnText.textContent = texts.btnText;
-            }
-            
-            // NO iniciar el xat automàticament
+            // Iniciar xat automàticament després de seleccionar idioma
+            await startNewConversation();
         });
-    });
-
-    // Event listener per al botó "Envia'ns un missatge"
-    newChatBtn.addEventListener('click', async () => {
-        await startNewConversation();
     });
 
     // Gestió del toggle button per obrir/tancar el xat
@@ -1613,7 +1600,7 @@
 
         currentSessionId = generateUUID();
         
-        // Ocultar la pantalla de benvinguda i mostrar la interfície de xat
+        // Canviar a la interfície de xat immediatament
         chatContainer.querySelector('.brand-header').style.display = 'none';
         chatContainer.querySelector('.new-conversation').style.display = 'none';
         chatInterface.classList.add('active');

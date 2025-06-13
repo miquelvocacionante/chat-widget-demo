@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 2.8.1
+// Chat Widget Script - Versió 2.9
 (function() {
     // Create and inject styles
     const styles = `
@@ -41,9 +41,51 @@
                 bottom: 0;
                 width: 100vw;
                 height: 100vh;
+                max-height: 100vh;
                 border-radius: 0;
                 box-shadow: none;
                 border: none;
+            }
+
+            .n8n-chat-widget .chat-input {
+                padding: 12px;
+                background: var(--chat--color-background);
+                border-top: 1px solid rgba(133, 79, 255, 0.1);
+                display: flex;
+                gap: 8px;
+                position: sticky;
+                bottom: 0;
+                left: 0;
+                right: 0;
+            }
+
+            .n8n-chat-widget .chat-input textarea {
+                flex: 1;
+                padding: 10px;
+                min-height: 36px;
+                max-height: 72px;
+                font-size: 16px;
+                border: 1px solid rgba(133, 79, 255, 0.2);
+                border-radius: 8px;
+                background: var(--chat--color-background);
+                color: var(--chat--color-font);
+                resize: none;
+                font-family: inherit;
+                line-height: 1.4;
+                overflow-y: auto;
+                -webkit-appearance: none;
+                appearance: none;
+            }
+
+            .n8n-chat-widget .chat-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 16px;
+                background: var(--chat--color-background);
+                display: flex;
+                flex-direction: column;
+                padding-bottom: 20px;
+                -webkit-overflow-scrolling: touch;
             }
 
             .n8n-chat-widget .chat-toggle {
@@ -942,7 +984,42 @@
         return processedBlocks.filter(block => block.trim() !== '').join('');
     }
 
-    // Funcions de navegació
+    // Prevent zoom on iOS/Android when focusing input
+    function preventZoom() {
+        const viewport = document.querySelector('meta[name=viewport]');
+        if (viewport) {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+        } else {
+            const newViewport = document.createElement('meta');
+            newViewport.name = 'viewport';
+            newViewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+            document.head.appendChild(newViewport);
+        }
+    }
+
+    // Handle mobile keyboard appearance
+    function handleMobileKeyboard() {
+        if (window.innerWidth <= 480) {
+            const textarea = chatContainer.querySelector('textarea');
+            const chatInput = chatContainer.querySelector('.chat-input');
+            
+            if (textarea && chatInput) {
+                textarea.addEventListener('focus', () => {
+                    // Ensure input area stays visible when keyboard appears
+                    setTimeout(() => {
+                        chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }, 300);
+                });
+
+                textarea.addEventListener('blur', () => {
+                    // Reset viewport when keyboard disappears
+                    setTimeout(() => {
+                        window.scrollTo(0, 0);
+                    }, 100);
+                });
+            }
+        }
+    }
     function showCategories() {
         const navContainer = messagesContainer.querySelector('.navigation-container');
         if (navContainer) navContainer.remove();
@@ -1251,6 +1328,14 @@
             await startNewConversation();
         });
     });
+
+    // Initialize mobile optimizations
+    preventZoom();
+    
+    // Setup mobile keyboard handling after interface is ready
+    setTimeout(() => {
+        handleMobileKeyboard();
+    }, 1000);
 
     function generateUUID() {
         return crypto.randomUUID();

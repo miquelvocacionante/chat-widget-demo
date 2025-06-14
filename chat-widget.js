@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 3.1.1
+// Chat Widget Script - Versió 3.2.1
 (function() {
     // Create and inject styles
     const styles = `
@@ -1437,7 +1437,7 @@
 
     // Gestió de selecció d'idioma
     languageButtons.forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
             const lang = btn.getAttribute('data-lang');
             selectedLanguage = lang;
             
@@ -1456,18 +1456,10 @@
                 footerLink.textContent = texts.poweredBy;
             }
             
-            // Iniciar xat automàticament després de seleccionar idioma
-            await startNewConversation();
+            // Mostrar el botó de nova conversa després de seleccionar idioma
+            newChatBtn.style.display = 'flex';
         });
     });
-
-    // Initialize mobile optimizations
-    preventZoom();
-    
-    // Setup mobile keyboard handling after interface is ready
-    setTimeout(() => {
-        handleMobileKeyboard();
-    }, 1000);
 
     function generateUUID() {
         return crypto.randomUUID();
@@ -1616,4 +1608,12 @@
             chatContainer.classList.remove('open');
         });
     });
+
+    // Initialize mobile optimizations
+    preventZoom();
+    
+    // Setup mobile keyboard handling after interface is ready
+    setTimeout(() => {
+        handleMobileKeyboard();
+    }, 1000);
 })();

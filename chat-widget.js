@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 3.0
+// Chat Widget Script - Versió 3.1.1
 (function() {
     // Create and inject styles
     const styles = `
@@ -31,7 +31,7 @@
             left: 20px;
         }
 
-        /* Responsive per mòbils - PANTALLA COMPLETA SEMPRE */
+        /* Responsive per mòbils - COMPLETAMENT RESPONSIVE */
         @media (max-width: 480px) {
             body {
                 overflow-x: hidden;
@@ -54,25 +54,48 @@
                 border: none;
                 transform: none;
                 zoom: 1;
-                -webkit-transform: scale(1);
-                -moz-transform: scale(1);
-                -ms-transform: scale(1);
-                transform: scale(1);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .n8n-chat-widget .brand-header {
+                flex-shrink: 0;
+                padding: 12px 16px;
+                min-height: 44px;
+                border-bottom: 1px solid rgba(133, 79, 255, 0.1);
+            }
+
+            .n8n-chat-widget .chat-messages {
+                flex: 1;
+                overflow-y: auto;
+                overflow-x: hidden;
+                padding: 12px;
+                background: var(--chat--color-background);
+                display: flex;
+                flex-direction: column;
+                -webkit-overflow-scrolling: touch;
+                min-height: 0;
+                height: auto;
+                box-sizing: border-box;
+                overscroll-behavior: contain;
+            }
+
+            .n8n-chat-widget .navigation-container {
+                padding: 12px;
+                background: var(--chat--color-background);
+                border-bottom: 1px solid rgba(133, 79, 255, 0.1);
+                flex-shrink: 0;
             }
 
             .n8n-chat-widget .chat-input {
+                flex-shrink: 0;
                 padding: 12px;
                 background: var(--chat--color-background);
                 border-top: 1px solid rgba(133, 79, 255, 0.1);
                 display: flex;
                 gap: 8px;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                width: 100vw;
                 box-sizing: border-box;
-                z-index: 1001;
+                min-height: 64px;
             }
 
             .n8n-chat-widget .chat-input textarea {
@@ -92,20 +115,14 @@
                 -webkit-appearance: none;
                 appearance: none;
                 box-sizing: border-box;
-                width: 100%;
             }
 
-            .n8n-chat-widget .chat-messages {
-                flex: 1;
-                overflow-y: auto;
-                padding: 16px;
-                padding-bottom: 80px;
+            .n8n-chat-widget .chat-footer {
+                flex-shrink: 0;
+                padding: 6px;
+                text-align: center;
                 background: var(--chat--color-background);
-                display: flex;
-                flex-direction: column;
-                -webkit-overflow-scrolling: touch;
-                height: calc(100vh - 80px);
-                box-sizing: border-box;
+                border-top: 1px solid rgba(133, 79, 255, 0.1);
             }
 
             .n8n-chat-widget .chat-toggle {
@@ -120,14 +137,19 @@
                 left: 15px;
             }
 
-            /* Prevent any zooming effects */
+            /* Millor scroll per al xat */
+            .n8n-chat-widget .chat-message {
+                touch-action: pan-y;
+                pointer-events: auto;
+            }
+
+            .n8n-chat-widget .navigation-container * {
+                touch-action: manipulation;
+            }
+
+            /* Prevent any zooming effects but allow scrolling */
             .n8n-chat-widget * {
                 -webkit-touch-callout: none;
-                -webkit-user-select: none;
-                -khtml-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
                 -webkit-tap-highlight-color: transparent;
             }
 
@@ -136,6 +158,47 @@
                 -moz-user-select: text;
                 -ms-user-select: text;
                 user-select: text;
+                touch-action: manipulation;
+            }
+
+            .n8n-chat-widget .chat-messages {
+                touch-action: pan-y;
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+            }
+        }
+
+        /* Específic per pantalles molt petites (iPhone SE) */
+        @media (max-width: 375px) and (max-height: 667px) {
+            .n8n-chat-widget .brand-header {
+                padding: 8px 12px;
+                min-height: 40px;
+            }
+
+            .n8n-chat-widget .navigation-container {
+                padding: 8px;
+            }
+
+            .n8n-chat-widget .chat-input {
+                padding: 8px;
+                min-height: 56px;
+            }
+
+            .n8n-chat-widget .chat-footer {
+                padding: 4px;
+            }
+
+            .n8n-chat-widget .category-btn {
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+
+            .n8n-chat-widget .chat-message {
+                padding: 10px 14px;
+                margin: 6px 0;
+                font-size: 13px;
             }
         }
 

@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 4.1 - ENVIAMENT ÚNIC OPTIMITZAT
+// Chat Widget Script - Versió 4.3 - SALUTACIÓ RESTAURADA
 (function() {
     // Create and inject styles
     const styles = `
@@ -1463,6 +1463,28 @@
 
     // Initialize mobile optimizations
     preventZoom();
+    
+    // Setup mobile keyboard handling after interface is ready
+    setTimeout(() => {
+        if (window.innerWidth <= 480) {
+            const textarea = chatContainer.querySelector('textarea');
+            const chatInput = chatContainer.querySelector('.chat-input');
+            
+            if (textarea && chatInput) {
+                textarea.addEventListener('focus', () => {
+                    setTimeout(() => {
+                        chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }, 300);
+                });
+
+                textarea.addEventListener('blur', () => {
+                    setTimeout(() => {
+                        window.scrollTo(0, 0);
+                    }, 100);
+                });
+            }
+        }
+    }, 1000);
 
     function generateUUID() {
         return crypto.randomUUID();
@@ -1481,7 +1503,16 @@
         chatContainer.querySelector('.new-conversation').style.display = 'none';
         chatInterface.classList.add('active');
 
-        // Mostrar categories de navegació directament
+        // Mostrar missatge de salutació
+        const texts = languageTexts[selectedLanguage];
+        const greetingMessage = texts.greeting;
+        
+        const botMessageDiv = document.createElement('div');
+        botMessageDiv.className = 'chat-message bot';
+        botMessageDiv.innerHTML = formatText(greetingMessage);
+        messagesContainer.appendChild(botMessageDiv);
+
+        // Mostrar categories de navegació després del salut
         setTimeout(() => {
             showCategories();
         }, 200);
@@ -1561,7 +1592,7 @@
         }
     }
 
-    newChatBtn.addEventListener('click', startNewConversation);
+    newChatBtn.addEventListener('click', showChatInterface);
     
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();

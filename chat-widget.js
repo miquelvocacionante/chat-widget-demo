@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 4.5 - DEBUG N8N COMUNICACIÓ
+// Chat Widget Script - Versió 4.6 - TOTES LES CORRECCIONS
 (function() {
     // Create and inject styles
     const styles = `
@@ -742,6 +742,81 @@
             backgroundColor: '#ffffff',
             fontColor: '#333333'
         }
+    }
+
+    // Funció per enviar missatges (missatges posteriors després del primer)
+    async function sendMessage(message) {
+        // Si no tenim sessió activa, tractar com a primer missatge
+        if (!currentSessionId) {
+            // Si tenim idioma seleccionat, crear missatge combinat
+            if (selectedLanguage) {
+                const texts = languageTexts[selectedLanguage];
+                const combinedMessage = `${texts.systemMessage} - ${message}`;
+                await sendFirstMessage(combinedMessage);
+            } else {
+                // Fallback si no hi ha idioma (no hauria de passar)
+                await sendFirstMessage(message);
+            }
+            return;
+        }
+
+        // Enviar missatge normal amb sessió existent
+        const messageData = {
+            action: "sendMessage",
+            sessionId: currentSessionId,
+            route: config.webhook.route,
+            chatInput: message,
+            metadata: {
+                userId: ""
+            }
+        };
+
+        // Mostrar missatge de l'usuari
+        const userMessageDiv = document.createElement('div');
+        userMessageDiv.className = 'chat-message user';
+        userMessageDiv.textContent = message;
+        messagesContainer.appendChild(userMessageDiv);
+        
+        // Mostrar typing indicator
+        showTypingIndicator();
+
+        try {
+            const response = await fetch(config.webhook.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messageData)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            // Amagar typing indicator
+            hideTypingIndicator();
+            
+            // Mostrar resposta del bot
+            const botMessageDiv = document.createElement('div');
+            botMessageDiv.className = 'chat-message bot';
+            botMessageDiv.innerHTML = formatText(Array.isArray(data) ? data[0].output : data.output);
+            messagesContainer.appendChild(botMessageDiv);
+            
+            // Scroll per mostrar l'últim missatge de l'usuari
+            setTimeout(scrollToShowUserMessage, 100);
+
+        } catch (error) {
+            hideTypingIndicator();
+            console.error('Error enviant missatge:', error);
+            
+            // Mostrar error a l'usuari
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'chat-message bot';
+            errorDiv.innerHTML = 'Hi ha hagut un error de connexió. Si us plau, torna-ho a intentar.';
+            messagesContainer.appendChild(errorDiv);
+        }
     };
 
     // Merge user config with defaults
@@ -1307,9 +1382,7 @@
         
         currentLevel = 'categories';
         currentPath = [];
-        setTimeout(() => {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }, 100);
+        showCategories();
     }
 
     // Funció per fer scroll mostrant l'últim missatge de l'usuari

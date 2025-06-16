@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 4.0 - WORDPRESS PROOF
+// Chat Widget Script - Versió 4.1 - ENVIAMENT ÚNIC OPTIMITZAT
 (function() {
     // Create and inject styles
     const styles = `
@@ -1279,11 +1279,19 @@
             }
         });
         navDiv.querySelectorAll('.option-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 const message = e.target.getAttribute('data-message');
-                sendMessage(message);
+                
+                // Preparar missatge combinat amb idioma
+                const texts = languageTexts[selectedLanguage];
+                const combinedMessage = `${texts.systemMessage} - ${message}`;
+                
+                // Ara SÍ enviem el missatge combinat
+                await sendFirstMessage(combinedMessage);
+                
                 // Eliminar navegació després d'enviar missatge
-                navContainer.remove();
+                const navContainer = messagesContainer.querySelector('.navigation-container');
+                if (navContainer) navContainer.remove();
             });
         });
 
@@ -1427,9 +1435,9 @@
     const sendButton = chatContainer.querySelector('button[type="submit"]');
     const languageButtons = chatContainer.querySelectorAll('.language-btn');
 
-    // Gestió de selecció d'idioma
+    // Gestió de selecció d'idioma - NOMÉS LOCAL
     languageButtons.forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
             const lang = btn.getAttribute('data-lang');
             selectedLanguage = lang;
             
@@ -1437,7 +1445,7 @@
             languageButtons.forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             
-            // Actualitzar textos de la interfície
+            // Actualitzar textos de la interfície (sense enviar missatge)
             const texts = languageTexts[lang];
             textarea.placeholder = texts.placeholder;
             sendButton.textContent = texts.sendBtn;
@@ -1448,58 +1456,35 @@
                 footerLink.textContent = texts.poweredBy;
             }
             
-            // Iniciar xat automàticament després de seleccionar idioma
-            await startNewConversation();
+            // Anar directament a la interfície de categories (sense enviar missatge)
+            showChatInterface();
         });
     });
 
     // Initialize mobile optimizations
     preventZoom();
-    
-    // Setup mobile keyboard handling after interface is ready
-    setTimeout(() => {
-        handleMobileKeyboard();
-    }, 1000);
 
     function generateUUID() {
         return crypto.randomUUID();
     }
 
-    async function startNewConversation() {
+    // Funció per mostrar la interfície de xat sense enviar missatges
+    function showChatInterface() {
         // Verificar que s'hagi seleccionat un idioma
         if (!selectedLanguage) {
             alert('Selecciona un idioma primer / Selecciona un idioma primero');
             return;
         }
 
-        currentSessionId = generateUUID();
-        
-        // Canviar a la interfície de xat immediatament
+        // Canviar a la interfície de xat sense enviar cap missatge
         chatContainer.querySelector('.brand-header').style.display = 'none';
         chatContainer.querySelector('.new-conversation').style.display = 'none';
         chatInterface.classList.add('active');
 
-        try {
-            // Enviar missatge d'idioma automàticament (invisible per l'usuari)
-            const languageMessage = languageTexts[selectedLanguage].systemMessage;
-            await sendLanguageMessage(languageMessage);
-
-            // Mostrar missatge de salutació
-            const greetingMessage = languageTexts[selectedLanguage].greeting;
-            
-            const botMessageDiv = document.createElement('div');
-            botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.innerHTML = formatText(greetingMessage);
-            messagesContainer.appendChild(botMessageDiv);
-            
-            // Mostrar categories de navegació
-            setTimeout(() => {
-                showCategories();
-            }, 500);
-
-        } catch (error) {
-            console.error('Error:', error);
-        }
+        // Mostrar categories de navegació directament
+        setTimeout(() => {
+            showCategories();
+        }, 200);
     }
 
     // Funció per enviar el missatge d'idioma (invisible)

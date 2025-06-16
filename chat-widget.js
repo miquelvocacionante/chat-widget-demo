@@ -1,5 +1,5 @@
-// Chat Widget Script - Versió 5.1 - ARAN RESPON
-// Amb millores de seguretat, modularitat, rendiment i scroll intel·ligent
+// Chat Widget Script - Versió 5.2 - ARAN RESPON
+// Amb millores de seguretat, modularitat, rendiment i scroll intel·ligent millorat
 
 (function() {
     'use strict';
@@ -461,7 +461,6 @@
             this.selectedLanguage = '';
             this.isOpen = false;
             this.messageQueue = [];
-            this.lastUserMessage = null; // Per al scroll intel·ligent
             
             // Inicialitzar components
             this.storage = new StorageManager(this.config);
@@ -586,6 +585,26 @@
             this.chatContainer.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') this.close();
             });
+            
+            // Handle mobile keyboard
+            if (window.innerWidth <= 480) {
+                this.textarea.addEventListener('focus', () => {
+                    // Ensure input area stays visible when keyboard appears
+                    setTimeout(() => {
+                        const chatInput = this.chatContainer.querySelector('.chat-input');
+                        if (chatInput) {
+                            chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                        }
+                    }, 300);
+                });
+
+                this.textarea.addEventListener('blur', () => {
+                    // Reset viewport when keyboard disappears
+                    setTimeout(() => {
+                        window.scrollTo(0, 0);
+                    }, 100);
+                });
+            }
         }
 
         toggle() {
@@ -772,12 +791,7 @@
             messageDiv.textContent = message;
             messageDiv.setAttribute('role', 'log');
             messageDiv.setAttribute('aria-label', `Tu: ${message}`);
-            // Afegir ID únic per referència posterior
-            messageDiv.setAttribute('data-message-id', `user-${Date.now()}`);
             this.messagesContainer.appendChild(messageDiv);
-            
-            // Guardar referència a l'últim missatge d'usuari
-            this.lastUserMessage = messageDiv;
             
             // Scroll normal al fons quan l'usuari envia
             this.scrollToBottom();
@@ -791,8 +805,8 @@
             messageDiv.setAttribute('aria-label', `Assistent: ${message.replace(/<[^>]*>/g, '')}`);
             this.messagesContainer.appendChild(messageDiv);
             
-            // Scroll intel·ligent: mostrar l'últim missatge de l'usuari a la part superior
-            this.scrollToShowUserMessage();
+            // Fem scroll per mostrar l'últim missatge de l'usuari
+            setTimeout(() => this.scrollToShowUserMessage(), 100);
         }
 
         showTypingIndicator() {
@@ -809,8 +823,14 @@
             typingDiv.setAttribute('aria-label', 'L\'assistent està escrivint');
             this.messagesContainer.appendChild(typingDiv);
             
-            // Scroll per mostrar typing indicator
-            this.scrollToBottom();
+            // Fem scroll per mostrar l'indicador
+            setTimeout(() => {
+                typingDiv.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'end',
+                    inline: 'nearest'
+                });
+            }, 100);
         }
 
         hideTypingIndicator() {
@@ -852,32 +872,22 @@
 
         scrollToBottom() {
             setTimeout(() => {
-                this.messagesContainer.scrollTo({
-                    top: this.messagesContainer.scrollHeight,
-                    behavior: this.config.features.scrollBehavior
-                });
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
             }, 100);
         }
 
         scrollToShowUserMessage() {
-            // Scroll intel·ligent per mostrar l'últim missatge de l'usuari
-            if (!this.lastUserMessage) {
-                this.scrollToBottom();
-                return;
-            }
-            
-            setTimeout(() => {
-                // Calcular posició per mostrar el missatge de l'usuari a la part superior
-                // amb un petit marge per context
-                const containerRect = this.messagesContainer.getBoundingClientRect();
-                const messageRect = this.lastUserMessage.getBoundingClientRect();
-                const scrollTop = this.lastUserMessage.offsetTop - 20; // 20px de marge superior
-                
-                this.messagesContainer.scrollTo({
-                    top: scrollTop,
-                    behavior: this.config.features.scrollBehavior
+            // Funció per fer scroll mostrant l'últim missatge de l'usuari
+            const userMessages = this.messagesContainer.querySelectorAll('.chat-message.user');
+            if (userMessages.length > 0) {
+                const lastUserMessage = userMessages[userMessages.length - 1];
+                // Fem scroll suau per mostrar l'últim missatge de l'usuari a la part superior
+                lastUserMessage.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest'
                 });
-            }, 100);
+            }
         }
 
         handleNavigation(action, ...args) {

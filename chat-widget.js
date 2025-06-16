@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 4.6 - TOTES LES CORRECCIONS
+// Chat Widget Script - Versió 4.7 - CODI UNIFICAT I CORREGIT
 (function() {
     // Create and inject styles
     const styles = `
@@ -1361,8 +1361,8 @@
                 const texts = languageTexts[selectedLanguage];
                 const combinedMessage = `${texts.systemMessage} - ${message}`;
                 
-                // Ara SÍ enviem el missatge combinat
-                await sendFirstMessage(combinedMessage);
+                // Enviar el missatge directament
+                await sendMessage(combinedMessage);
                 
                 // Eliminar navegació després d'enviar missatge
                 const navContainer = messagesContainer.querySelector('.navigation-container');
@@ -1569,6 +1569,11 @@
         if (!selectedLanguage) {
             alert('Selecciona un idioma primer / Selecciona un idioma primero');
             return;
+        }
+
+        // Generar sessió si no existeix
+        if (!currentSessionId) {
+            currentSessionId = generateUUID();
         }
 
         // Canviar a la interfície de xat sense enviar cap missatge

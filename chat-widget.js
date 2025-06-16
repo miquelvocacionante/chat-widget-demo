@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 3.1.2
+// Chat Widget Script - Versió 4.0 - WORDPRESS PROOF
 (function() {
     // Create and inject styles
     const styles = `

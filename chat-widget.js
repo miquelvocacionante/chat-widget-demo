@@ -1,5 +1,5 @@
-// Chat Widget Script - Versió 5.3 - ARAN RESPON
-// Amb millores de seguretat, modularitat, rendiment, scroll intel·ligent i UX millorada
+// Chat Widget Script - Versió 6.0 - ARAN RESPON
+// Amb sistema híbrid d'idiomes, millores UX i optimització de flux
 
 (function() {
     'use strict';
@@ -461,6 +461,7 @@
             this.selectedLanguage = '';
             this.isOpen = false;
             this.messageQueue = [];
+            this.hasUserInteracted = false; // Flag per saber si és la primera interacció real
             
             // Inicialitzar components
             this.storage = new StorageManager(this.config);
@@ -541,6 +542,7 @@
 
             // Assignar referències a elements
             this.toggleButton = toggleButton;
+            this.chatInterface = this.chatContainer.querySelector('.chat-interface');
             this.messagesContainer = this.chatContainer.querySelector('.chat-messages');
             this.textarea = this.chatContainer.querySelector('textarea');
             this.sendButton = this.chatContainer.querySelector('button[type="submit"]');
@@ -696,14 +698,7 @@
         }
 
         async sendLanguageMessage(message) {
-            try {
-                await this.api.sendMessage(this.sessionId, message, {
-                    userId: "",
-                    isLanguageSetup: true
-                });
-            } catch (error) {
-                console.error('Error enviant missatge d\'idioma:', error);
-            }
+            // Funció eliminada - ja no cal enviar missatge d'idioma separat
         }
 
         async sendCurrentMessage() {
@@ -731,7 +726,13 @@
             await this.sendMessage(message);
         }
 
-        async sendMessage(message) {
+        async sendMessage(message, metadata = {}) {
+            // Determinar si és el primer missatge real de l'usuari
+            const isInitialMessage = !this.hasUserInteracted;
+            if (isInitialMessage) {
+                this.hasUserInteracted = true;
+            }
+            
             // Afegir missatge de l'usuari
             this.addUserMessage(message);
             
@@ -747,9 +748,19 @@
             this.setInputEnabled(false);
 
             try {
-                const response = await this.api.sendMessage(this.sessionId, message, {
-                    userId: ""
-                });
+                // Preparar metadata amb informació d'idioma
+                const enhancedMetadata = {
+                    userId: "",
+                    preferredLanguage: this.selectedLanguage,
+                    isInitialMessage: isInitialMessage,
+                    ...metadata
+                };
+                
+                const response = await this.api.sendMessage(
+                    this.sessionId, 
+                    message, 
+                    enhancedMetadata
+                );
                 
                 // Amagar typing indicator
                 this.hideTypingIndicator();
@@ -799,16 +810,27 @@
             this.scrollToBottom();
         }
 
-        addBotMessage(message) {
+        addBotMessage(message, isLocal = false) {
             const messageDiv = document.createElement('div');
             messageDiv.className = 'chat-message bot';
             messageDiv.innerHTML = Utils.formatText(message);
             messageDiv.setAttribute('role', 'log');
             messageDiv.setAttribute('aria-label', `Assistent: ${message.replace(/<[^>]*>/g, '')}`);
+            
+            // Marcar si és un missatge local (no del servidor)
+            if (isLocal) {
+                messageDiv.setAttribute('data-local', 'true');
+            }
+            
             this.messagesContainer.appendChild(messageDiv);
             
             // Fem scroll per mostrar l'últim missatge de l'usuari
-            setTimeout(() => this.scrollToShowUserMessage(), 100);
+            // Només si NO és un missatge local (salutació inicial)
+            if (!isLocal) {
+                setTimeout(() => this.scrollToShowUserMessage(), 100);
+            } else {
+                this.scrollToBottom();
+            }
         }
 
         showTypingIndicator() {
@@ -947,7 +969,7 @@
                             categoryKey,
                             null,
                             this.handleNavigation.bind(this),
-                            this.sendMessage.bind(this)
+                            (message) => this.sendMessage(message) // Enviar directament
                         );
                     }
                     break;
@@ -959,7 +981,7 @@
                         catKey,
                         subcatKey,
                         this.handleNavigation.bind(this),
-                        this.sendMessage.bind(this)
+                        (message) => this.sendMessage(message) // Enviar directament
                     );
                     break;
             }
@@ -980,10 +1002,11 @@
                 this.sessionId = session.sessionId;
                 this.selectedLanguage = session.language;
                 
-                // Restaurar historial
+                // Restaurar historial si existeix
                 const history = this.storage.getHistory();
                 if (history.length > 0) {
-                    // TODO: Implementar restauració visual de l'historial
+                    // Marcar que l'usuari ja ha interactuat si hi ha historial
+                    this.hasUserInteracted = history.some(msg => msg.type === 'user');
                 }
             }
         }
@@ -1073,7 +1096,6 @@
                     placeholder: "Escriu el teu missatge aquí...",
                     sendBtn: "Enviar",
                     sendingBtn: "Enviant...",
-                    systemMessage: "[IDIOMA:català] L'usuari vol rebre respostes en català",
                     greeting: "**Hola! Sóc l'assistent virtual d'ARAN RESPON.** Com puc ajudar-te?",
                     poweredBy: "Desenvolupat per ok-otto",
                     navigation: {
@@ -1227,7 +1249,6 @@
                     placeholder: "Escribe tu mensaje aquí...",
                     sendBtn: "Enviar",
                     sendingBtn: "Enviando...", 
-                    systemMessage: "[IDIOMA:español] L'usuari vol rebre respostes en español",
                     greeting: "**¡Hola! Soy el asistente virtual de ARAN RESPON.** ¿Cómo puedo ayudarte?",
                     poweredBy: "Desarrollado por ok-otto",
                     navigation: {
@@ -1381,7 +1402,6 @@
                     placeholder: "Escrivètz eth vòstre messatge ací...",
                     sendBtn: "Mandar",
                     sendingBtn: "Mandant...",
-                    systemMessage: "[IDIOMA:aranès] L'usuari vol rebre respostes en aranès",
                     greeting: "**Adiu! Sòi er assistent virtuau d'ARAN RESPON.** Com pòdi ajudar-te?",
                     poweredBy: "Desvolupat per ok-otto",
                     navigation: {

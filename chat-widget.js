@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 3.0.1
+// Chat Widget Script - Versió 3.1.2
 (function() {
     // Create and inject styles
     const styles = `
@@ -31,14 +31,8 @@
             left: 20px;
         }
 
-        /* Responsive per mòbils - PANTALLA COMPLETA SEMPRE */
+        /* Responsive per mòbils - COMPLETAMENT RESPONSIVE */
         @media (max-width: 480px) {
-            body {
-                overflow-x: hidden;
-                -webkit-text-size-adjust: 100%;
-                -ms-text-size-adjust: 100%;
-            }
-
             .n8n-chat-widget .chat-container {
                 position: fixed;
                 top: 0;
@@ -47,30 +41,35 @@
                 bottom: 0;
                 width: 100vw;
                 height: 100vh;
+                height: 100dvh; /* Dynamic viewport height per iOS */
                 max-width: 100vw;
                 max-height: 100vh;
+                max-height: 100dvh;
                 border-radius: 0;
                 box-shadow: none;
                 border: none;
                 transform: none;
                 zoom: 1;
-                -webkit-transform: scale(1);
-                -moz-transform: scale(1);
-                -ms-transform: scale(1);
-                transform: scale(1);
+                display: none; /* Mantenim el widget flotant */
+            }
+
+            .n8n-chat-widget .chat-container.open {
+                display: flex;
+                flex-direction: column;
             }
 
             .n8n-chat-widget .chat-input {
                 padding: 12px;
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
                 background: var(--chat--color-background);
                 border-top: 1px solid rgba(133, 79, 255, 0.1);
                 display: flex;
                 gap: 8px;
-                position: fixed;
+                position: absolute;
                 bottom: 0;
                 left: 0;
                 right: 0;
-                width: 100vw;
+                width: 100%;
                 box-sizing: border-box;
                 z-index: 1001;
             }
@@ -93,26 +92,34 @@
                 appearance: none;
                 box-sizing: border-box;
                 width: 100%;
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
             }
 
             .n8n-chat-widget .chat-messages {
                 flex: 1;
                 overflow-y: auto;
                 padding: 16px;
-                padding-bottom: 80px;
+                padding-bottom: calc(80px + env(safe-area-inset-bottom));
                 background: var(--chat--color-background);
                 display: flex;
                 flex-direction: column;
                 -webkit-overflow-scrolling: touch;
                 height: calc(100vh - 80px);
+                height: calc(100dvh - 80px);
                 box-sizing: border-box;
+                overscroll-behavior: contain;
+                scroll-behavior: smooth;
             }
 
             .n8n-chat-widget .chat-toggle {
-                bottom: 15px;
+                bottom: max(15px, env(safe-area-inset-bottom));
                 right: 15px;
                 width: 50px;
                 height: 50px;
+                z-index: 1000;
             }
 
             .n8n-chat-widget .chat-toggle.position-left {
@@ -120,22 +127,70 @@
                 left: 15px;
             }
 
-            /* Prevent any zooming effects */
+            /* Millor scroll - només bloquejem el que cal */
             .n8n-chat-widget * {
                 -webkit-touch-callout: none;
-                -webkit-user-select: none;
-                -khtml-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
                 -webkit-tap-highlight-color: transparent;
             }
 
-            .n8n-chat-widget .chat-input textarea {
+            .n8n-chat-widget .chat-message {
                 -webkit-user-select: text;
                 -moz-user-select: text;
                 -ms-user-select: text;
                 user-select: text;
+            }
+
+            .n8n-chat-widget .chat-messages,
+            .n8n-chat-widget .navigation-container {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                touch-action: pan-y;
+            }
+
+            /* Responsive per pantalles molt petites (iPhone SE, etc.) */
+            @media (max-height: 600px) {
+                .n8n-chat-widget .chat-messages {
+                    padding: 12px;
+                    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+                    height: calc(100vh - 70px);
+                    height: calc(100dvh - 70px);
+                }
+
+                .n8n-chat-widget .chat-input {
+                    padding: 8px;
+                    padding-bottom: max(8px, env(safe-area-inset-bottom));
+                }
+
+                .n8n-chat-widget .chat-input textarea {
+                    min-height: 32px;
+                    max-height: 64px;
+                    padding: 8px;
+                }
+
+                .n8n-chat-widget .category-btn {
+                    padding: 10px 16px;
+                    font-size: 14px;
+                }
+
+                .n8n-chat-widget .navigation-container {
+                    padding: 12px;
+                }
+            }
+
+            /* Responsive per pantalles més grans (iPhone Pro Max, etc.) */
+            @media (min-height: 850px) {
+                .n8n-chat-widget .chat-messages {
+                    padding: 20px;
+                    padding-bottom: calc(90px + env(safe-area-inset-bottom));
+                    height: calc(100vh - 90px);
+                    height: calc(100dvh - 90px);
+                }
+
+                .n8n-chat-widget .navigation-container {
+                    padding: 24px;
+                }
             }
         }
 

@@ -1,5 +1,5 @@
-// Chat Widget Script - Versió 5.0 - ARAN RESPON
-// Amb millores de seguretat, modularitat i rendiment
+// Chat Widget Script - Versió 5.1 - ARAN RESPON
+// Amb millores de seguretat, modularitat, rendiment i scroll intel·ligent
 
 (function() {
     'use strict';
@@ -461,6 +461,7 @@
             this.selectedLanguage = '';
             this.isOpen = false;
             this.messageQueue = [];
+            this.lastUserMessage = null; // Per al scroll intel·ligent
             
             // Inicialitzar components
             this.storage = new StorageManager(this.config);
@@ -665,6 +666,8 @@
                         this.messagesContainer,
                         this.handleNavigation.bind(this)
                     );
+                    // Scroll al fons per veure les categories
+                    this.scrollToBottom();
                 }, 500);
 
             } catch (error) {
@@ -769,7 +772,14 @@
             messageDiv.textContent = message;
             messageDiv.setAttribute('role', 'log');
             messageDiv.setAttribute('aria-label', `Tu: ${message}`);
+            // Afegir ID únic per referència posterior
+            messageDiv.setAttribute('data-message-id', `user-${Date.now()}`);
             this.messagesContainer.appendChild(messageDiv);
+            
+            // Guardar referència a l'últim missatge d'usuari
+            this.lastUserMessage = messageDiv;
+            
+            // Scroll normal al fons quan l'usuari envia
             this.scrollToBottom();
         }
 
@@ -780,7 +790,9 @@
             messageDiv.setAttribute('role', 'log');
             messageDiv.setAttribute('aria-label', `Assistent: ${message.replace(/<[^>]*>/g, '')}`);
             this.messagesContainer.appendChild(messageDiv);
-            this.scrollToBottom();
+            
+            // Scroll intel·ligent: mostrar l'últim missatge de l'usuari a la part superior
+            this.scrollToShowUserMessage();
         }
 
         showTypingIndicator() {
@@ -796,6 +808,8 @@
             `;
             typingDiv.setAttribute('aria-label', 'L\'assistent està escrivint');
             this.messagesContainer.appendChild(typingDiv);
+            
+            // Scroll per mostrar typing indicator
             this.scrollToBottom();
         }
 
@@ -813,6 +827,9 @@
             
             // Eliminar després de 5 segons
             setTimeout(() => errorDiv.remove(), 5000);
+            
+            // Scroll per mostrar error
+            this.scrollToBottom();
         }
 
         setInputEnabled(enabled) {
@@ -837,6 +854,27 @@
             setTimeout(() => {
                 this.messagesContainer.scrollTo({
                     top: this.messagesContainer.scrollHeight,
+                    behavior: this.config.features.scrollBehavior
+                });
+            }, 100);
+        }
+
+        scrollToShowUserMessage() {
+            // Scroll intel·ligent per mostrar l'últim missatge de l'usuari
+            if (!this.lastUserMessage) {
+                this.scrollToBottom();
+                return;
+            }
+            
+            setTimeout(() => {
+                // Calcular posició per mostrar el missatge de l'usuari a la part superior
+                // amb un petit marge per context
+                const containerRect = this.messagesContainer.getBoundingClientRect();
+                const messageRect = this.lastUserMessage.getBoundingClientRect();
+                const scrollTop = this.lastUserMessage.offsetTop - 20; // 20px de marge superior
+                
+                this.messagesContainer.scrollTo({
+                    top: scrollTop,
                     behavior: this.config.features.scrollBehavior
                 });
             }, 100);

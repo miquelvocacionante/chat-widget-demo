@@ -1,5 +1,5 @@
-// Chat Widget Script - Versió 5.2 - ARAN RESPON
-// Amb millores de seguretat, modularitat, rendiment i scroll intel·ligent millorat
+// Chat Widget Script - Versió 5.3 - ARAN RESPON
+// Amb millores de seguretat, modularitat, rendiment, scroll intel·ligent i UX millorada
 
 (function() {
     'use strict';
@@ -782,6 +782,8 @@
                 this.messageQueue.push(message);
             } finally {
                 this.setInputEnabled(true);
+                // Tornar el focus al textarea després d'enviar
+                this.textarea.focus();
             }
         }
 
@@ -856,10 +858,11 @@
             this.textarea.disabled = !enabled;
             this.sendButton.disabled = !enabled;
             
+            const texts = this.getLanguageTexts()[this.selectedLanguage];
             if (!enabled) {
-                this.sendButton.textContent = 'Enviant...';
+                // Utilitzar el text d'enviament traduït segons l'idioma
+                this.sendButton.textContent = texts ? texts.sendingBtn : 'Enviant...';
             } else {
-                const texts = this.getLanguageTexts()[this.selectedLanguage];
                 this.sendButton.textContent = texts ? texts.sendBtn : 'Enviar';
             }
         }
@@ -1069,6 +1072,7 @@
                     btnText: "Envia'ns un missatge",
                     placeholder: "Escriu el teu missatge aquí...",
                     sendBtn: "Enviar",
+                    sendingBtn: "Enviant...",
                     systemMessage: "[IDIOMA:català] L'usuari vol rebre respostes en català",
                     greeting: "**Hola! Sóc l'assistent virtual d'ARAN RESPON.** Com puc ajudar-te?",
                     poweredBy: "Desenvolupat per ok-otto",
@@ -1221,7 +1225,8 @@
                 es: {
                     btnText: "Envíanos un mensaje",
                     placeholder: "Escribe tu mensaje aquí...",
-                    sendBtn: "Enviar", 
+                    sendBtn: "Enviar",
+                    sendingBtn: "Enviando...", 
                     systemMessage: "[IDIOMA:español] L'usuari vol rebre respostes en español",
                     greeting: "**¡Hola! Soy el asistente virtual de ARAN RESPON.** ¿Cómo puedo ayudarte?",
                     poweredBy: "Desarrollado por ok-otto",
@@ -1375,6 +1380,7 @@
                     btnText: "Mandatz-mos un messatge",
                     placeholder: "Escrivètz eth vòstre messatge ací...",
                     sendBtn: "Mandar",
+                    sendingBtn: "Mandant...",
                     systemMessage: "[IDIOMA:aranès] L'usuari vol rebre respostes en aranès",
                     greeting: "**Adiu! Sòi er assistent virtuau d'ARAN RESPON.** Com pòdi ajudar-te?",
                     poweredBy: "Desvolupat per ok-otto",

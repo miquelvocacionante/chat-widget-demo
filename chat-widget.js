@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 4.4 - COMUNICACIÓ N8N ARREGLADA
+// Chat Widget Script - Versió 4.5 - DEBUG N8N COMUNICACIÓ
 (function() {
     // Create and inject styles
     const styles = `
@@ -1563,6 +1563,31 @@
         // Mostrem l'indicador de typing
         showTypingIndicator();
 
+    async function sendMessage(message) {
+        // Si no tenim sessió, és el primer missatge després de navegació
+        if (!currentSessionId) {
+            await sendFirstMessage(message);
+            return;
+        }
+
+        const messageData = {
+            action: "sendMessage",
+            sessionId: currentSessionId,
+            route: config.webhook.route,
+            chatInput: message,
+            metadata: {
+                userId: ""
+            }
+        };
+
+        const userMessageDiv = document.createElement('div');
+        userMessageDiv.className = 'chat-message user';
+        userMessageDiv.textContent = message;
+        messagesContainer.appendChild(userMessageDiv);
+        
+        // Mostrem l'indicador de typing
+        showTypingIndicator();
+
         try {
             const response = await fetch(config.webhook.url, {
                 method: 'POST',
@@ -1579,17 +1604,16 @@
             
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            // Utilitzem innerHTML amb la funció formatText per mostrar markdown
             botMessageDiv.innerHTML = formatText(Array.isArray(data) ? data[0].output : data.output);
             messagesContainer.appendChild(botMessageDiv);
             
             // Fem scroll per mostrar l'últim missatge de l'usuari
             setTimeout(scrollToShowUserMessage, 100);
         } catch (error) {
-            // Amaguem l'indicador de typing en cas d'error
             hideTypingIndicator();
             console.error('Error:', error);
         }
+    }
     }
 
     newChatBtn.addEventListener('click', showChatInterface);

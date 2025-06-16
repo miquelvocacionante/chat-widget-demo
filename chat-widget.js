@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 4.3 - SALUTACIÓ RESTAURADA
+// Chat Widget Script - Versió 4.4 - COMUNICACIÓ N8N ARREGLADA
 (function() {
     // Create and inject styles
     const styles = `

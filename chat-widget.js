@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 6.4 - ARAN RESPON
+// Chat Widget Script - Versió 6.5 - ARAN RESPON
 // Amb sistema híbrid d'idiomes, millores UX i optimització de flux
 
 (function() {
@@ -682,7 +682,23 @@ const IDIOMA_TAGS = { ca: 'català', es: 'español', oc: 'aranès' };
                 const texts = this.getLanguageTexts()[this.selectedLanguage];
 
                 // Mostrar salutació
-                this.addBotMessage(texts.greeting);
+                this.addBotMessage(texts.greeting, true);
+                // Marca que hem saludat des del client
+this.localGreetingShown = true;
+
+// Preflight silenciós per “iniciar” la sessió al backend
+try {
+  await this.api.sendMessage(
+    this.sessionId,
+    `[INIT][IDIOMA:${IDIOMA_TAGS[this.selectedLanguage] || this.selectedLanguage}]`,
+    {
+      preferredLanguage: this.selectedLanguage,
+      preflight: true,
+      suppressGreeting: true
+    }
+  );
+} catch (_) { /* ignorem errors del preflight */ }
+
                 
                 // Mostrar categories després d'un petit delay
                 setTimeout(() => {

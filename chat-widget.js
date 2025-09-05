@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 6.0 - ARAN RESPON
+// Chat Widget Script - Versió 6.1 - ARAN RESPON
 // Amb sistema híbrid d'idiomes, millores UX i optimització de flux
 
 (function() {
@@ -9,8 +9,12 @@
     window.AranChatWidgetInitialized = true;
 
     // ==================== CONFIGURACIÓ I CONSTANTS ====================
+
+// Map d’idiomes (fora de DEFAULT_CONFIG)
+const IDIOMA_TAGS = { ca: 'català', es: 'español', oc: 'aranès' };
     
     const DEFAULT_CONFIG = {
+
         webhook: {
             url: '',
             route: '',
@@ -659,6 +663,7 @@
         }
 
         async startNewConversation() {
+            this.hasUserInteracted = false;
             if (!this.selectedLanguage) {
                 this.showError('Selecciona un idioma primer / Selecciona un idioma primero');
                 return;
@@ -674,9 +679,7 @@
             this.chatContainer.querySelector('.chat-interface').classList.add('active');
 
             try {
-                // Enviar missatge d'idioma (invisible)
                 const texts = this.getLanguageTexts()[this.selectedLanguage];
-                await this.sendLanguageMessage(texts.systemMessage);
 
                 // Mostrar salutació
                 this.addBotMessage(texts.greeting);
@@ -695,10 +698,6 @@
                 console.error('Error iniciant conversa:', error);
                 this.showError('Error iniciant la conversa. Torna-ho a intentar.');
             }
-        }
-
-        async sendLanguageMessage(message) {
-            // Funció eliminada - ja no cal enviar missatge d'idioma separat
         }
 
         async sendCurrentMessage() {
@@ -727,76 +726,57 @@
         }
 
         async sendMessage(message, metadata = {}) {
-            // Determinar si és el primer missatge real de l'usuari
-            const isInitialMessage = !this.hasUserInteracted;
-            if (isInitialMessage) {
-                this.hasUserInteracted = true;
-            }
-            
-            // Afegir missatge de l'usuari
-            this.addUserMessage(message);
-            
-            // Netejar navegació si existeix
-            this.navigation.clearNavigation(this.messagesContainer);
-            
-            // Mostrar indicador de typing
-            if (this.config.features.enableTypingIndicator) {
-                this.showTypingIndicator();
-            }
-            
-            // Deshabilitar enviament mentre processa
-            this.setInputEnabled(false);
+  // És el primer missatge de l’usuari?
+  const isInitialMessage = !this.hasUserInteracted;
+  if (isInitialMessage) this.hasUserInteracted = true;
 
-            try {
-                // Preparar metadata amb informació d'idioma
-                const enhancedMetadata = {
-                    userId: "",
-                    preferredLanguage: this.selectedLanguage,
-                    isInitialMessage: isInitialMessage,
-                    ...metadata
-                };
-                
-                const response = await this.api.sendMessage(
-                    this.sessionId, 
-                    message, 
-                    enhancedMetadata
-                );
-                
-                // Amagar typing indicator
-                this.hideTypingIndicator();
-                
-                // Processar resposta
-                const botResponse = Array.isArray(response) ? response[0].output : response.output;
-                this.addBotMessage(botResponse);
-                
-                // Guardar a l'historial
-                this.storage.saveMessage({
-                    type: 'user',
-                    content: message
-                });
-                this.storage.saveMessage({
-                    type: 'bot',
-                    content: botResponse
-                });
-                
-            } catch (error) {
-                this.hideTypingIndicator();
-                console.error('Error enviant missatge:', error);
-                
-                if (error.message.includes('timeout')) {
-                    this.showError('La resposta està tardant massa. Torna-ho a intentar.');
-                } else {
-                    this.showError('No s\'ha pogut enviar el missatge. Comprova la connexió.');
-                }
-                
-                // Guardar missatge fallit per reintentar
-                this.messageQueue.push(message);
-            } finally {
-                this.setInputEnabled(true);
-                // Tornar el focus al textarea després d'enviar
-                this.textarea.focus();
-            }
-        }
+  // Mostra a la UI el text tal qual (sense etiqueta)
+  this.addUserMessage(message);
+
+  // Neteja navegació i mostra "escrivint..."
+  this.navigation.clearNavigation(this.messagesContainer);
+  if (this.config.features.enableTypingIndicator) this.showTypingIndicator();
+  this.setInputEnabled(false);
+
+  try {
+    // Prefix d’idioma NOMÉS al primer missatge que s’envia al backend
+    const idiomaTag = IDIOMA_TAGS[this.selectedLanguage] || this.selectedLanguage;
+    const payloadMessage = isInitialMessage ? `[IDIOMA:${idiomaTag}] ${message}` : message;
+
+    // Metadata amb idioma i si és primer missatge
+    const enhancedMetadata = {
+      userId: "",
+      preferredLanguage: this.selectedLanguage, // "ca" | "es" | "oc"
+      isInitialMessage: isInitialMessage,
+      ...metadata
+    };
+
+    // Enviament al teu webhook
+    const response = await this.api.sendMessage(
+      this.sessionId,
+      payloadMessage,
+      enhancedMetadata
+    );
+
+    // Amaga "escrivint..." i pinta la resposta del bot
+    this.hideTypingIndicator();
+    const botResponse = Array.isArray(response) ? response[0].output : response.output;
+    this.addBotMessage(botResponse);
+
+    // Desa a l’historial
+    this.storage.saveMessage({ type: 'user', content: message });
+    this.storage.saveMessage({ type: 'bot', content: botResponse });
+
+  } catch (error) {
+    this.hideTypingIndicator();
+    console.error('Error enviant missatge:', error);
+    if (error.message.includes('timeout')) this.showError('La resposta està tardant massa. Torna-ho a intentar.');
+    else this.showError('No s\'ha pogut enviar el missatge. Comprova la connexió.');
+  } finally {
+    this.setInputEnabled(true);
+    this.textarea.focus();
+  }
+}
 
         addUserMessage(message) {
             const messageDiv = document.createElement('div');

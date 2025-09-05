@@ -1,4 +1,4 @@
-// Chat Widget Script - Versió 6.3 - ARAN RESPON
+// Chat Widget Script - Versió 6.4 - ARAN RESPON
 // Amb sistema híbrid d'idiomes, millores UX i optimització de flux
 
 (function() {
@@ -747,6 +747,7 @@ const IDIOMA_TAGS = { ca: 'català', es: 'español', oc: 'aranès' };
     const enhancedMetadata = {
       userId: "",
       preferredLanguage: this.selectedLanguage, // "ca" | "es" | "oc"
+      isInitialMessage: false,
       ...metadata
     };
 

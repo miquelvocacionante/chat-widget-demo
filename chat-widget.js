@@ -736,7 +736,7 @@ this.localGreetingShown = true;
   this.addUserMessage(message);
 
   // Neteja navegació i mostra "escrivint..."
-  this.navigation.clearNavigation(this.messagesContainer);
+  // this.navigation.clearNavigation(this.messagesContainer);
   if (this.config.features.enableTypingIndicator) this.showTypingIndicator();
   this.setInputEnabled(false);
 
